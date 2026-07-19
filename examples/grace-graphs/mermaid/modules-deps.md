@@ -1,0 +1,13 @@
+# GRACE Module Dependencies
+
+```mermaid
+%% GRACE Module Dependencies
+flowchart LR
+  M_CORE["M-CORE<br/>Core<br/>[implemented]"]
+  M_HELPER["M-HELPER<br/>Helper<br/>[implemented]"]
+  M_MISSING_FILE["M-MISSING-FILE<br/>MissingFile<br/>[implemented]"]
+  M_UNVERIFIED["M-UNVERIFIED<br/>Unverified<br/>[implemented]"]
+
+  M_HELPER -->|depends_on| M_CORE
+  M_UNVERIFIED -->|depends_on| M_CORE
+```

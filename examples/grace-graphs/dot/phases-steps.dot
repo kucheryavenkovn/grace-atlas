@@ -1,0 +1,36 @@
+digraph G {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, label="GRACE Phases and Steps", labelloc=t, overlap=false, splines=true, newrank=true];
+  node [shape=box, style="rounded,filled", fillcolor="#E8F1FF", fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  subgraph cluster_phase {
+    label="phase";
+    style=rounded;
+    bgcolor="#E0F7FA";
+    Phase_1 [label="Phase-1\\nFoundation\\n[done]"];
+    Phase_2 [label="Phase-2\\nCurrent\\n[in_progress]"];
+  }
+
+  subgraph cluster_step {
+    label="step";
+    style=rounded;
+    bgcolor="#F5F5F5";
+    step_1_1 [label="step-1.1\\nCore\\n[done]"];
+    step_2_1 [label="step-2.1\\nWork\\n[in_progress]"];
+  }
+
+  subgraph cluster_verification {
+    label="verification";
+    style=rounded;
+    bgcolor="#F3E8FF";
+    V_M_CORE [label="V-M-CORE"];
+    V_M_HELPER [label="V-M-HELPER"];
+  }
+
+
+  Phase_1 -> step_1_1 [label="contains"];
+  step_1_1 -> V_M_CORE [label="verified_by"];
+  Phase_2 -> step_2_1 [label="contains"];
+  step_2_1 -> V_M_HELPER [label="verified_by"];
+}

@@ -20,6 +20,31 @@ Skills, marketplace packaging, and the optional `grace` CLI live here:
 
 This repository (**grace-atlas**) is a separate, read-only **visualization** layer: it does not replace GRACE skills/CLI; it turns existing GRACE project artifacts into an Obsidian vault (Graph View, Local Graph, Canvas, diagnostics).
 
+## GRACE graphs (Graphviz + Mermaid)
+
+Standalone generator (stdlib + optional Graphviz `dot`) — **no Obsidian required**:
+
+```powershell
+# against any project with docs/*.xml (or XML in project root)
+python tools/grace_graphs/generate_grace_graphs.py --project-root /path/to/grace-project
+
+# Video2PPTX (when this repo is a submodule)
+python tools/grace_atlas/tools/grace_graphs/generate_grace_graphs.py --project-root .
+```
+
+Writes under `<project>/docs/grace-graphs/` (or `--out`):
+
+| Format | Path |
+|--------|------|
+| Graphviz DOT | `dot/*.dot` |
+| SVG | `svg/*.svg` |
+| PNG | `png/*.png` |
+| Mermaid | `mermaid/*.mmd`, `mermaid/*.md` |
+
+Example output from the minimal fixture: [`examples/grace-graphs/`](examples/grace-graphs/).
+
+Details: [`tools/grace_graphs/README.md`](tools/grace_graphs/README.md).
+
 
 ## Demo
 

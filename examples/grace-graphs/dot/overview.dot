@@ -1,0 +1,29 @@
+digraph G {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, label="GRACE Overview", labelloc=t, overlap=false, splines=true, newrank=true];
+  node [shape=box, style="rounded,filled", fillcolor="#E8F1FF", fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  subgraph cluster_hub {
+    label="hub";
+    style=rounded;
+    bgcolor="#FFFDE7";
+    CriticalFlows [label="CriticalFlows\\n1"];
+    CrossLinks [label="CrossLinks\\n1"];
+    DataFlows [label="DataFlows\\n1"];
+    DependsEdges [label="depends_on\\n2"];
+    Modules [label="Modules\\n4"];
+    Phases [label="Phases\\n2"];
+    UseCases [label="UseCases\\n2"];
+    Verifications [label="Verifications\\n2"];
+  }
+
+
+  Modules -> DependsEdges [label="has"];
+  Modules -> Verifications [label="verified_by"];
+  Modules -> CrossLinks [label="linked"];
+  UseCases -> DataFlows [label="related"];
+  UseCases -> CriticalFlows [label="covered_by"];
+  Phases -> Modules [label="implements"];
+  CriticalFlows -> Verifications [label="checks"];
+}

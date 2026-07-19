@@ -1,0 +1,12 @@
+%% GRACE Modules ↔ Verification
+flowchart LR
+  M_CORE["M-CORE<br/>Core"]
+  M_HELPER["M-HELPER<br/>Helper"]
+  M_MISSING_FILE["M-MISSING-FILE<br/>MissingFile"]
+  M_UNVERIFIED["M-UNVERIFIED<br/>Unverified"]
+  V_M_CORE["V-M-CORE<br/>[passed]"]
+  V_M_HELPER["V-M-HELPER<br/>[passed]"]
+
+  M_CORE -->|verified_by| V_M_CORE
+  M_HELPER -->|verified_by| V_M_HELPER
+  M_MISSING_FILE -->|verified_by| V_M_CORE

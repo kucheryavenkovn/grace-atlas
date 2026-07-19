@@ -1,0 +1,17 @@
+# GRACE Phases and Steps
+
+```mermaid
+%% GRACE Phases and Steps
+flowchart TB
+  Phase_1["Phase-1<br/>Foundation<br/>[done]"]
+  Phase_2["Phase-2<br/>Current<br/>[in_progress]"]
+  V_M_CORE["V-M-CORE"]
+  V_M_HELPER["V-M-HELPER"]
+  step_1_1["step-1.1<br/>Core<br/>[done]"]
+  step_2_1["step-2.1<br/>Work<br/>[in_progress]"]
+
+  Phase_1 -->|contains| step_1_1
+  step_1_1 -->|verified_by| V_M_CORE
+  Phase_2 -->|contains| step_2_1
+  step_2_1 -->|verified_by| V_M_HELPER
+```

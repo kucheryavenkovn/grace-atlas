@@ -1,0 +1,10 @@
+# GRACE CrossLinks (knowledge-graph)
+
+```mermaid
+%% GRACE CrossLinks (knowledge-graph)
+flowchart LR
+  M_CORE["M-CORE"]
+  M_HELPER["M-HELPER"]
+
+  M_HELPER -->|uses helper utilities| M_CORE
+```

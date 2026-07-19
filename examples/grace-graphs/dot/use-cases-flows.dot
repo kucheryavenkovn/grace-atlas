@@ -1,0 +1,33 @@
+digraph G {
+  rankdir=LR;
+  graph [fontname="Helvetica", fontsize=12, label="GRACE Use Cases ↔ Flows", labelloc=t, overlap=false, splines=true, newrank=true];
+  node [shape=box, style="rounded,filled", fillcolor="#E8F1FF", fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  subgraph cluster_critical_flow {
+    label="critical_flow";
+    style=rounded;
+    bgcolor="#FFE8E8";
+    VF_001 [label="VF-001\\nDetectHappyPath"];
+  }
+
+  subgraph cluster_data_flow {
+    label="data_flow";
+    style=rounded;
+    bgcolor="#FFF6E0";
+    DF_001 [label="DF-001\\nDetectPipeline"];
+  }
+
+  subgraph cluster_use_case {
+    label="use_case";
+    style=rounded;
+    bgcolor="#E8FFE8";
+    UC_001 [label="UC-001\\nRuns detect"];
+    UC_ORPHAN [label="UC-ORPHAN\\nOrphan use case"];
+  }
+
+
+  UC_001 -> DF_001 [label="related_flow"];
+  VF_001 -> UC_001 [label="uses"];
+  VF_001 -> DF_001 [label="data_flow"];
+}

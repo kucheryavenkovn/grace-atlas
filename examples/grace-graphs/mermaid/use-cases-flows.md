@@ -1,0 +1,14 @@
+# GRACE Use Cases ↔ Flows
+
+```mermaid
+%% GRACE Use Cases ↔ Flows
+flowchart LR
+  DF_001["DF-001<br/>DetectPipeline"]
+  UC_001["UC-001<br/>Runs detect"]
+  UC_ORPHAN["UC-ORPHAN<br/>Orphan use case"]
+  VF_001["VF-001<br/>DetectHappyPath"]
+
+  UC_001 -->|related_flow| DF_001
+  VF_001 -->|uses| UC_001
+  VF_001 -->|data_flow| DF_001
+```
