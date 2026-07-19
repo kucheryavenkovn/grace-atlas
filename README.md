@@ -10,6 +10,16 @@ GRACE XML and source code remain the source of truth. The vault is a disposable 
 
 Used as a **git submodule** in [video2pptx](https://github.com/kucheryavenkovn/video2pptx) under `tools/grace_atlas`, but works with any GRACE-governed project via config + discovery.
 
+## What is GRACE?
+
+**GRACE** = **G**raph-**R**AG **A**nchored **C**ode **E**ngineering — a contract-first methodology for AI-assisted engineering: semantic markup, shared XML artifacts (`requirements`, `development-plan`, `knowledge-graph`, `verification-plan`, …), verification planning, and knowledge-graph navigation.
+
+Skills, marketplace packaging, and the optional `grace` CLI live here:
+
+→ **[osovv/grace-marketplace](https://github.com/osovv/grace-marketplace)**
+
+This repository (**grace-atlas**) is a separate, read-only **visualization** layer: it does not replace GRACE skills/CLI; it turns existing GRACE project artifacts into an Obsidian vault (Graph View, Local Graph, Canvas, diagnostics).
+
 
 ## Demo
 
