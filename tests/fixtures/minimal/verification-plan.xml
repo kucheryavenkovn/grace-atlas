@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VerificationPlan VERSION="0.1.0">
+  <CriticalFlows>
+    <VF-001 NAME="DetectHappyPath" USE_CASES="UC-001" DATA_FLOW="DF-001" PRIORITY="high">
+      <scenario>Happy path detect</scenario>
+      <expected-outcome>slides.json valid</expected-outcome>
+    </VF-001>
+  </CriticalFlows>
+  <ModuleVerification>
+    <V-M-CORE MODULE="M-CORE" PRIORITY="high" STATUS="passed">
+      <test-files><file>tests/test_core.py</file></test-files>
+      <module-checks><check-1>pytest tests/test_core.py</check-1></module-checks>
+      <evidence><result>3 tests passed</result></evidence>
+    </V-M-CORE>
+    <V-M-HELPER MODULE="M-HELPER" PRIORITY="medium" STATUS="passed">
+      <test-files><file>tests/test_helper.py</file></test-files>
+    </V-M-HELPER>
+  </ModuleVerification>
+</VerificationPlan>

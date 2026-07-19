@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<KnowledgeGraph VERSION="0.1.0">
+  <Project NAME="fixture" VERSION="0.1.0">
+    <M-CORE NAME="Core" TYPE="CORE_LOGIC" STATUS="implemented">
+      <purpose>Core module for fixture</purpose>
+      <path>src/sample/core.py</path>
+      <depends>none</depends>
+      <verification-ref>V-M-CORE</verification-ref>
+    </M-CORE>
+    <M-HELPER NAME="Helper" TYPE="UTILITY" STATUS="implemented">
+      <purpose>Helper depends on core</purpose>
+      <path>src/sample/helper.py</path>
+      <depends>M-CORE</depends>
+      <verification-ref>V-M-HELPER</verification-ref>
+    </M-HELPER>
+    <M-UNVERIFIED NAME="Unverified" TYPE="UTILITY" STATUS="implemented">
+      <purpose>Module without verification edge in verification plan</purpose>
+      <path>src/sample/unverified.py</path>
+      <depends>M-CORE</depends>
+    </M-UNVERIFIED>
+    <M-MISSING-FILE NAME="MissingFile" TYPE="UTILITY" STATUS="implemented">
+      <purpose>Declares a path that does not exist</purpose>
+      <path>src/sample/does_not_exist.py</path>
+      <depends>none</depends>
+      <verification-ref>V-M-CORE</verification-ref>
+    </M-MISSING-FILE>
+    <CrossLink from="M-HELPER" to="M-CORE" relation="uses helper utilities" />
+  </Project>
+</KnowledgeGraph>

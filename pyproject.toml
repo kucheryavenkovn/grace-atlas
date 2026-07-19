@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "grace-atlas"
+version = "0.2.0"
+description = "Read-only GRACE → Obsidian Vault projector for visual navigation of requirements, modules, verification, and source links."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Vladimir Kucheryavenko", email = "kucheryavenkovn@yandex.ru" }]
+keywords = ["grace", "obsidian", "traceability", "knowledge-graph", "architecture"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Documentation",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/kucheryavenkovn/grace-atlas"
+Repository = "https://github.com/kucheryavenkovn/grace-atlas"
+Issues = "https://github.com/kucheryavenkovn/grace-atlas/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+grace-atlas = "grace_atlas.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/grace_atlas"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

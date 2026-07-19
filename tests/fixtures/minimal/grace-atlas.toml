@@ -1,0 +1,16 @@
+[project]
+name = "FixtureProject"
+
+[grace]
+search_paths = [".", "docs"]
+
+[source]
+include = ["src/**/*.py", "tests/**/*.py"]
+exclude = [".grace-atlas/**"]
+
+[obsidian]
+vault_path = ".grace-atlas/vault"
+home_note = "Home.md"
+
+[vscode]
+enabled = true

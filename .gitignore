@@ -1,0 +1,22 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+
+# Generated vaults
+.grace-atlas/vault/
+**/.grace-atlas/vault/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DevelopmentPlan VERSION="0.1.0">
+  <Modules>
+    <M-CORE NAME="Core" TYPE="CORE_LOGIC" LAYER="0" ORDER="1" STATUS="implemented">
+      <contract><purpose>Core module for fixture</purpose></contract>
+      <target><source>src/sample/core.py</source><tests>tests/test_core.py</tests></target>
+      <verification-ref>V-M-CORE</verification-ref>
+      <depends>none</depends>
+    </M-CORE>
+  </Modules>
+  <DataFlow>
+    <DF-001 NAME="DetectPipeline" TRIGGER="CLI detect">
+      <step>run core</step>
+    </DF-001>
+  </DataFlow>
+  <ImplementationOrder>
+    <Phase-1 name="Foundation" status="done">
+      <goal>Foundation phase</goal>
+      <step-1.1 name="Core" status="done" verification="V-M-CORE">Implement core</step-1.1>
+    </Phase-1>
+    <Phase-2 name="Current" status="in_progress">
+      <goal>Active phase for canvas</goal>
+      <step-2.1 name="Work" status="in_progress" verification="V-M-HELPER">Ongoing work</step-2.1>
+    </Phase-2>
+  </ImplementationOrder>
+</DevelopmentPlan>

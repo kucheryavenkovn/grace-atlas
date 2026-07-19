@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RequirementsAnalysis VERSION="0.1.0">
+  <Project>
+    <name>fixture-project</name>
+    <annotation>Minimal GRACE fixture for Atlas tests</annotation>
+  </Project>
+  <UseCases>
+    <UC-001>
+      <Actor>User</Actor>
+      <Action>Runs detect</Action>
+      <Goal>Get slides.json</Goal>
+      <Priority>high</Priority>
+      <RelatedFlows>DF-001</RelatedFlows>
+    </UC-001>
+    <UC-ORPHAN>
+      <Actor>User</Actor>
+      <Action>Orphan use case</Action>
+      <Goal>No related flows</Goal>
+      <Priority>low</Priority>
+    </UC-ORPHAN>
+  </UseCases>
+</RequirementsAnalysis>
