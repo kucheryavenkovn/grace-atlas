@@ -33,47 +33,52 @@ Give humans a visual interface to GRACE:
 
 ## 3. Install
 
-Python **3.10+**, stdlib only.
+Python **3.10+**, **stdlib only** (no third-party runtime deps).
+
+### Standalone
 
 ```powershell
-# from repository root — no install required
-$env:PYTHONPATH = "tools/grace_atlas/src"
+git clone https://github.com/kucheryavenkovn/grace-atlas.git
+cd grace-atlas
+pip install -e ".[dev]"   # optional
 python -m grace_atlas --help
 
-# or wrapper
-python tools/grace_atlas.py --help
-
-# optional editable install
-cd tools/grace_atlas
-pip install -e ".[dev]"
+# without install
+$env:PYTHONPATH = "src"   # Linux/macOS: export PYTHONPATH=src
+python -m grace_atlas --help
 ```
+
+### As a git submodule (Video2PPTX and similar)
+
+```powershell
+git submodule add https://github.com/kucheryavenkovn/grace-atlas.git tools/grace_atlas
+git submodule update --init --recursive
+
+# clone host with submodule
+git clone --recurse-submodules https://github.com/OWNER/HOST.git
+```
+
+Host projects usually keep `grace-atlas.toml` at the project root and a thin wrapper script.
 
 ## 4. Run
 
 ```powershell
-# Build vault (Markdown + Canvas + diagnostics)
+# any GRACE project
+python -m grace_atlas build --project-root /path/to/project
+
+# Video2PPTX (submodule + wrapper)
 python tools/grace_atlas.py build --project-root .
-# equivalent:
-python -m grace_atlas build --project-root .
 
 # Options
-python tools/grace_atlas.py build --project-root . --clean --output .grace-atlas/vault
-python tools/grace_atlas.py build --project-root . --open      # try obsidian:// URI
-python tools/grace_atlas.py build --project-root . --strict    # exit 1 on error findings
-python tools/grace_atlas.py build --project-root . --verbose
-
-# Status without writing vault
-python tools/grace_atlas.py status --project-root .
-
-# Trace an entity in the terminal
-python tools/grace_atlas.py trace M-APP-AUTO --project-root .
-python tools/grace_atlas.py trace UC-001 --project-root .
-
-# Open Home.md via Obsidian URI (soft-fail if Obsidian not registered)
-python tools/grace_atlas.py open --project-root .
+python -m grace_atlas build --project-root . --clean --output .grace-atlas/vault
+python -m grace_atlas build --project-root . --open
+python -m grace_atlas build --project-root . --strict
+python -m grace_atlas status --project-root .
+python -m grace_atlas trace M-APP-AUTO --project-root .
+python -m grace_atlas open --project-root .
 ```
 
-Default vault: `.grace-atlas/vault/` (see `grace-atlas.toml`).
+Default vault: `.grace-atlas/vault/` (override in `grace-atlas.toml` or `--output`).
 
 ## 5. Open the vault
 
