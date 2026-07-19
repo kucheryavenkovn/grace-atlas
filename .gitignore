@@ -20,3 +20,8 @@ venv/
 .vscode/
 *.swp
 .DS_Store
+
+# Local capture sources (publish only optimized assets)
+docs/assets/demo-source.*
+*.mp4
+!docs/assets/demo-preview.mp4
