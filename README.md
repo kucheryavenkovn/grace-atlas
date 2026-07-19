@@ -13,13 +13,11 @@ Used as a **git submodule** in [video2pptx](https://github.com/kucheryavenkovn/v
 
 ## Demo
 
-**Глобальный граф Obsidian** (Graph View) — облако GRACE-сущностей, сгенерированное Atlas:
+**Part 1** — артефакты GRACE (заметки vault, сгенерированные Atlas):
 
-**Part 1** — глобальный граф Obsidian (начало сессии):
+![Артефакты GRACE — part 1](docs/assets/demo.gif)
 
-![Глобальный граф Obsidian — part 1](docs/assets/demo.gif)
-
-**Part 2** — глобальный граф Obsidian (с 00:57):
+**Part 2** — глобальный граф Obsidian (Graph View, с 00:57):
 
 ![Глобальный граф Obsidian — part 2](docs/assets/demo-2.gif)
 
