@@ -54,42 +54,42 @@ export default class GraceWorkbenchPlugin extends Plugin {
 
     this.addCommand({
       id: "open-workbench",
-      name: "GRACE: Open Workbench",
+      name: "GRACE: Открыть Workbench",
       callback: () => void this.openWorkbenchLayout(),
     });
     this.addCommand({
       id: "reload-model",
-      name: "GRACE: Reload Model",
+      name: "GRACE: Перезагрузить модель",
       callback: () => void this.reloadModel(),
     });
     this.addCommand({
       id: "focus-entity",
-      name: "GRACE: Focus Entity",
+      name: "GRACE: Перейти к сущности",
       callback: () => this.openFocusModal(),
     });
     this.addCommand({
       id: "open-model-browser",
-      name: "GRACE: Open Model Browser",
+      name: "GRACE: Открыть браузер модели",
       callback: () => void this.activateView(VIEW_BROWSER, "left"),
     });
     this.addCommand({
       id: "open-diagram",
-      name: "GRACE: Open Diagram",
+      name: "GRACE: Открыть диаграмму",
       callback: () => void this.activateView(VIEW_DIAGRAM, "main"),
     });
     this.addCommand({
       id: "open-inspector",
-      name: "GRACE: Open Inspector",
+      name: "GRACE: Открыть инспектор",
       callback: () => void this.activateView(VIEW_INSPECTOR, "right"),
     });
     this.addCommand({
       id: "open-diagnostics",
-      name: "GRACE: Open Diagnostics",
+      name: "GRACE: Открыть диагностику",
       callback: () => void this.activateView(VIEW_DIAGNOSTICS, "main"),
     });
     this.addCommand({
       id: "open-vscode",
-      name: "GRACE: Open Current Entity in VS Code",
+      name: "GRACE: Открыть сущность в VS Code",
       callback: () => {
         const id = this.store.getState().selectedEntityId;
         if (id) this.openVsCode(id);
@@ -97,7 +97,7 @@ export default class GraceWorkbenchPlugin extends Plugin {
     });
     this.addCommand({
       id: "open-source",
-      name: "GRACE: Open Current Entity Source",
+      name: "GRACE: Открыть исходник сущности",
       callback: () => {
         const id = this.store.getState().selectedEntityId;
         if (id) this.openSource(id);
@@ -105,12 +105,12 @@ export default class GraceWorkbenchPlugin extends Plugin {
     });
     this.addCommand({
       id: "show-traceability",
-      name: "GRACE: Show Traceability",
+      name: "GRACE: Показать трассируемость",
       callback: () => this.activateDiagnosticsTab("traceability"),
     });
     this.addCommand({
       id: "show-impact",
-      name: "GRACE: Show Impact",
+      name: "GRACE: Показать impact",
       callback: () => {
         const id = this.store.getState().selectedEntityId;
         if (id) this.openImpact(id);
@@ -118,12 +118,12 @@ export default class GraceWorkbenchPlugin extends Plugin {
     });
     this.addCommand({
       id: "nav-back",
-      name: "GRACE: Navigate Back",
+      name: "GRACE: Назад",
       callback: () => this.store.goBack(),
     });
     this.addCommand({
       id: "nav-forward",
-      name: "GRACE: Navigate Forward",
+      name: "GRACE: Вперёд",
       callback: () => this.store.goForward(),
     });
 
@@ -163,7 +163,7 @@ export default class GraceWorkbenchPlugin extends Plugin {
         hash: result.snapshot.manifest.modelHash,
       });
       new Notice(
-        `GRACE model ready: ${result.snapshot.manifest.nodeCount} nodes / ${result.snapshot.manifest.edgeCount} edges`
+        `Модель GRACE: ${result.snapshot.manifest.nodeCount} узлов / ${result.snapshot.manifest.edgeCount} рёбер`
       );
     }
   }
@@ -198,7 +198,7 @@ export default class GraceWorkbenchPlugin extends Plugin {
 
   openFocusModal(): void {
     if (!this.index) {
-      new Notice("Model not loaded");
+      new Notice("Модель не загружена");
       return;
     }
     new FocusEntityModal(this.app, this.index, (node) => {
@@ -257,14 +257,14 @@ export default class GraceWorkbenchPlugin extends Plugin {
     const node = this.index?.nodeById.get(entityId);
     const rel = node?.links?.obsidianNote;
     if (!rel) {
-      new Notice("No note link for entity");
+      new Notice("У сущности нет ссылки на заметку");
       return;
     }
     const file = this.app.vault.getAbstractFileByPath(rel);
     if (file instanceof TFile) {
       await this.app.workspace.getLeaf(false).openFile(file);
     } else {
-      new Notice(`Note not found: ${rel}`);
+      new Notice(`Заметка не найдена: ${rel}`);
     }
   }
 
@@ -272,7 +272,7 @@ export default class GraceWorkbenchPlugin extends Plugin {
     const node = this.index?.nodeById.get(entityId);
     const uri = node?.links?.sourceUri || node?.source?.file;
     if (!uri) {
-      new Notice("No source path");
+      new Notice("Нет пути к исходнику");
       return;
     }
     // Prefer vault-relative note for source files
@@ -284,7 +284,7 @@ export default class GraceWorkbenchPlugin extends Plugin {
     const node = this.index?.nodeById.get(entityId);
     const uri = node?.links?.vscodeUri;
     if (!uri) {
-      new Notice("No VS Code URI");
+      new Notice("Нет URI VS Code");
       return;
     }
     window.open(uri);

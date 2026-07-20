@@ -146,32 +146,32 @@ def _workbench_home(
             "",
             "## 1. Реестры (Obsidian Bases)",
             "",
-            "- [[Views/Requirements.base|Requirements]]",
-            "- [[Views/Modules.base|Modules]]",
-            "- [[Views/Verification.base|Verification]]",
-            "- [[Views/Current-Work.base|Current work]]",
+            "- [[Views/Requirements.base|Требования]]",
+            "- [[Views/Modules.base|Модули]]",
+            "- [[Views/Verification.base|Верификация]]",
+            "- [[Views/Current-Work.base|Текущая работа]]",
             "- [[Views/Gaps.base|Gaps]]",
-            "- [[Views/Source-Files.base|Source files]]",
-            "- [[Dashboards/Bases-Validation|Bases validation]]",
+            "- [[Views/Source-Files.base|Исходные файлы]]",
+            "- [[Dashboards/Bases-Validation|Проверка Bases]]",
             "",
             "## 2. Деревья и матрицы",
             "",
-            "- [[Dashboards/Requirement-Tree|Requirement / UC tree]]",
-            "- [[Dashboards/Behavior-Tree|Behavior tree (honest hierarchy)]]",
-            "- [[Dashboards/Traceability-Matrix|Traceability matrix]]",
-            "- [[Dashboards/Traceability-Coverage|Traceability coverage]]",
-            "- [[Dashboards/User-Journey-Video2PPTX|User journey]]",
-            "- [[Dashboards/Gap-Triage|Gap triage]]",
-            "- [[Dashboards/Manual-Acceptance-Checklist|Manual acceptance]]",
+            "- [[Dashboards/Requirement-Tree|Дерево требований / UC]]",
+            "- [[Dashboards/Behavior-Tree|Behavior tree (честная иерархия)]]",
+            "- [[Dashboards/Traceability-Matrix|Матрица трассируемости]]",
+            "- [[Dashboards/Traceability-Coverage|Покрытие трассируемости]]",
+            "- [[Dashboards/User-Journey-Video2PPTX|Пользовательский сценарий]]",
+            "- [[Dashboards/Gap-Triage|Триаж gaps]]",
+            "- [[Dashboards/Manual-Acceptance-Checklist|Ручная приёмка]]",
             "",
             "## 3. Сводка",
             "",
-            f"- Nodes: **{len(graph.nodes)}** · Edges: **{len(graph.edges)}**",
+            f"- Узлы: **{len(graph.nodes)}** · Рёбра: **{len(graph.edges)}**",
             f"- Findings: **{len(triaged)}** · actionable: **{len(actionable)}**",
-            f"- UC total: **{coverage['total_use_cases']}** · "
-            f"partial chains: **{coverage['partial_chains']}** · "
-            f"broken: **{coverage['broken_chains']}** · "
-            f"complete: **{coverage['complete_chains']}**",
+            f"- UC всего: **{coverage['total_use_cases']}** · "
+            f"частичные цепочки: **{coverage['partial_chains']}** · "
+            f"разорванные: **{coverage['broken_chains']}** · "
+            f"полные: **{coverage['complete_chains']}**",
             "",
             "## 4. Как работать",
             "",
@@ -569,11 +569,11 @@ def _howto() -> str:
             "3. CLI: `python -m grace_atlas show UC-001 --project-root .`",
             "4. Gaps: `python -m grace_atlas gaps --actionable --project-root .`",
             "5. Checklist: [[Dashboards/Manual-Acceptance-Checklist]].",
-            "6. Phase 3 Workbench plugin: command **GRACE: Open Workbench**.",
+            "6. Плагин Workbench Phase 3: команда **GRACE: Открыть Workbench**.",
             "7. Snapshot: `python -m grace_atlas snapshot build --project-root .`",
             "8. Round-trip: [[Dashboards/Round-Trip-Status]].",
             "",
-            "Declared vs inferred: inferred marked in body; gaps never auto-fixed.",
+            "Declared vs inferred: inferred помечается в теле; gaps никогда не «чинятся» автоматически.",
             "",
         ]
     )
@@ -581,12 +581,12 @@ def _howto() -> str:
 
 
 def _roundtrip_stub() -> str:
-    lines = _header("Round-Trip Status")
+    lines = _header("Статус Round-Trip")
     lines.extend(
         [
-            "Контроль соответствия GRACE model ↔ source markup ↔ files ↔ tests ↔ evidence.",
+            "Контроль соответствия: модель GRACE ↔ source markup ↔ файлы ↔ тесты ↔ evidence.",
             "",
-            "**Важно:** inferred-предложения **никогда** не становятся declared без GracePatch + подтверждения.",
+            "**Важно:** inferred-предложения **никогда** не становятся declared без GracePatch и подтверждения.",
             "",
             "## CLI",
             "",
@@ -605,7 +605,7 @@ def _roundtrip_stub() -> str:
             "print(write_roundtrip_dashboard(load_config(repo_root=Path('.'))))\"",
             "```",
             "",
-            "См. также plugin Round-trip panels (Phase 3D) и `.grace-atlas/user/fingerprints.json`.",
+            "См. также панели Round-trip в плагине (Phase 3D) и `.grace-atlas/user/fingerprints.json`.",
             "",
         ]
     )
@@ -613,16 +613,16 @@ def _roundtrip_stub() -> str:
 
 
 def _phase3a_checklist() -> str:
-    lines = _header("Phase 3A Manual Acceptance")
+    lines = _header("Phase 3A — ручная приёмка")
     lines.extend(
         [
-            "См. исходный checklist в `tools/grace_atlas/docs/Phase-3A-Manual-Acceptance.md`.",
+            "Исходный checklist: `tools/grace_atlas/docs/Phase-3A-Manual-Acceptance.md`.",
             "",
-            "- [ ] Open Workbench",
-            "- [ ] UC-001 select + diagram + inspector",
-            "- [ ] M-APP-AUTO neighborhood",
-            "- [ ] Back/Forward",
-            "- [ ] No GRACE XML mutation",
+            "- [ ] Открыть Workbench",
+            "- [ ] UC-001: выбор + диаграмма + инспектор",
+            "- [ ] Окрестность M-APP-AUTO",
+            "- [ ] Назад / Вперёд",
+            "- [ ] XML GRACE не изменён",
             "",
         ]
     )

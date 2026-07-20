@@ -21,7 +21,7 @@ export class DiagnosticsView extends ItemView {
     return VIEW_DIAGNOSTICS;
   }
   getDisplayText(): string {
-    return "GRACE Diagnostics";
+    return "Диагностика GRACE";
   }
   getIcon(): string {
     return "alert-triangle";
@@ -51,11 +51,11 @@ export class DiagnosticsView extends ItemView {
 
     const tabs = container.createDiv({ cls: "grace-tabs" });
     const tabDefs: Array<[TabId, string]> = [
-      ["problems", "Problems"],
-      ["traceability", "Traceability"],
-      ["relations", "Relations"],
-      ["history", "History"],
-      ["log", "Log"],
+      ["problems", "Проблемы"],
+      ["traceability", "Трассируемость"],
+      ["relations", "Связи"],
+      ["history", "История"],
+      ["log", "Журнал"],
     ];
     for (const [id, label] of tabDefs) {
       const t = tabs.createSpan({
@@ -92,7 +92,7 @@ export class DiagnosticsView extends ItemView {
     const toolbar = body.createDiv({ cls: "grace-wb-toolbar" });
     const search = toolbar.createEl("input", {
       type: "search",
-      attr: { placeholder: "Filter problems…" },
+      attr: { placeholder: "Фильтр проблем…" },
       value: this.filterText,
     });
     search.oninput = () => {
@@ -101,7 +101,10 @@ export class DiagnosticsView extends ItemView {
     };
     const sev = toolbar.createEl("select");
     for (const s of ["", "error", "warning", "info"]) {
-      sev.createEl("option", { text: s || "all severity", value: s });
+      sev.createEl("option", {
+        text: s ? s : "все severity",
+        value: s,
+      });
     }
     sev.value = this.severity;
     sev.onchange = () => {
@@ -129,13 +132,13 @@ export class DiagnosticsView extends ItemView {
 
     body.createDiv({
       text: selected
-        ? `Findings for ${selected}: ${findings.length}`
-        : `Findings: ${findings.length} (select entity to filter)`,
+        ? `Findings для ${selected}: ${findings.length}`
+        : `Findings: ${findings.length} (выберите сущность для фильтра)`,
     });
 
     const table = body.createEl("table", { cls: "grace-table" });
     const head = table.createEl("tr");
-    for (const h of ["sev", "code", "entity", "message", "source"]) {
+    for (const h of ["sev", "код", "сущность", "сообщение", "источник"]) {
       head.createEl("th", { text: h });
     }
     for (const f of findings.slice(0, 200)) {
@@ -158,13 +161,13 @@ export class DiagnosticsView extends ItemView {
     const id = this.plugin.store.getState().selectedEntityId;
     const index = this.plugin.index;
     if (!id || !index) {
-      body.createDiv({ cls: "grace-empty", text: "Select an entity" });
+      body.createDiv({ cls: "grace-empty", text: "Выберите сущность" });
       return;
     }
-    body.createEl("h4", { text: `Traceability: ${id}` });
+    body.createEl("h4", { text: `Трассируемость: ${id}` });
     const out = index.outgoing.get(id) || [];
     const inc = index.incoming.get(id) || [];
-    body.createDiv({ text: "Downstream" });
+    body.createDiv({ text: "Вниз по потоку" });
     for (const e of out) {
       const line = body.createDiv({ cls: "grace-rel-link" });
       line.setText(`${e.relation} → ${e.target} [${e.sourceState}/${e.resolutionState}]`);
@@ -173,7 +176,7 @@ export class DiagnosticsView extends ItemView {
           type: index.nodeById.get(e.target)?.type,
         });
     }
-    body.createDiv({ text: "Upstream" });
+    body.createDiv({ text: "Вверх по потоку" });
     for (const e of inc) {
       const line = body.createDiv({ cls: "grace-rel-link" });
       line.setText(`${e.relation} ← ${e.source} [${e.sourceState}/${e.resolutionState}]`);
@@ -194,7 +197,7 @@ export class DiagnosticsView extends ItemView {
 
   private renderHistory(body: HTMLElement): void {
     const st = this.plugin.store.getState();
-    body.createEl("h4", { text: "Navigation history" });
+    body.createEl("h4", { text: "История навигации" });
     st.navigationHistory.forEach((id, i) => {
       const row = body.createDiv({
         cls: `grace-rel-link${i === st.historyIndex ? " selected" : ""}`,
@@ -206,8 +209,8 @@ export class DiagnosticsView extends ItemView {
       };
     });
     const nav = body.createDiv({ cls: "grace-actions" });
-    nav.createEl("button", { text: "Back" }).onclick = () => this.plugin.store.goBack();
-    nav.createEl("button", { text: "Forward" }).onclick = () => this.plugin.store.goForward();
+    nav.createEl("button", { text: "Назад" }).onclick = () => this.plugin.store.goBack();
+    nav.createEl("button", { text: "Вперёд" }).onclick = () => this.plugin.store.goForward();
   }
 
   private renderLog(body: HTMLElement): void {

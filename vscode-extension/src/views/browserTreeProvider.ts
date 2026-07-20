@@ -50,7 +50,7 @@ export class BrowserTreeProvider implements vscode.TreeDataProvider<GraceTreeIte
       return [
         new GraceTreeItem(
           "root",
-          err || `Model: ${status}. Run snapshot build.`,
+          err || `Модель: ${status}. Выполните snapshot build.`,
           vscode.TreeItemCollapsibleState.None
         ),
       ];
@@ -104,7 +104,7 @@ export class BrowserTreeProvider implements vscode.TreeDataProvider<GraceTreeIte
           );
           item.command = {
             command: "graceWorkbench.openDiagramId",
-            title: "Open diagram",
+            title: "Открыть диаграмму",
             arguments: [d.id],
           };
           item.contextValue = "graceDiagram";

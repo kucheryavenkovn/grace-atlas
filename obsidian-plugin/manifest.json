@@ -3,7 +3,7 @@
   "name": "GRACE Workbench",
   "version": "0.4.0",
   "minAppVersion": "1.5.0",
-  "description": "Rose-like GRACE CASE workbench: Model Browser, Diagram, Inspector, Diagnostics. Reads normalized .grace-atlas/model snapshot only.",
+  "description": "CASE Workbench для GRACE: браузер модели, диаграмма, инспектор, диагностика. Читает только snapshot .grace-atlas/model.",
   "author": "GRACE Atlas",
   "authorUrl": "https://github.com/kucheryavenkovn/grace-atlas",
   "isDesktopOnly": true

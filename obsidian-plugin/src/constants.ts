@@ -49,29 +49,29 @@ export const BROWSER_ROOTS: Array<{
 }> = [
   {
     id: "requirements",
-    label: "Requirements",
+    label: "Требования",
     types: ["Requirement", "Constraint", "Risk", "NonGoal", "UseCase"],
   },
   {
     id: "behavior",
-    label: "Behavior",
+    label: "Поведение",
     types: ["UseCase", "DataFlow", "CriticalFlow"],
   },
   {
     id: "architecture",
-    label: "Architecture",
+    label: "Архитектура",
     types: ["Module", "Contract", "SemanticBlock", "SourceFile", "Deployment"],
   },
   {
     id: "verification",
-    label: "Verification",
+    label: "Верификация",
     types: ["Verification", "TestFile", "Evidence", "CriticalFlow"],
   },
   {
     id: "development",
-    label: "Development",
+    label: "Разработка",
     types: ["Phase", "Step", "OperationalPacket"],
   },
-  { id: "diagnostics", label: "Diagnostics", special: "diagnostics" },
-  { id: "diagrams", label: "Diagrams", special: "diagrams" },
+  { id: "diagnostics", label: "Диагностика", special: "diagnostics" },
+  { id: "diagrams", label: "Диаграммы", special: "diagrams" },
 ];

@@ -11,7 +11,7 @@ export class FocusEntityModal extends FuzzySuggestModal<WorkbenchNode> {
     super(app);
     this.index = index;
     this.onPick = onPick;
-    this.setPlaceholder("Focus entity by ID or name…");
+    this.setPlaceholder("Сущность по ID или имени…");
   }
 
   getItems(): WorkbenchNode[] {

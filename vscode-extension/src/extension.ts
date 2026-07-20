@@ -36,7 +36,7 @@ function modelRelative(): string {
 async function reloadModel(showNotice = true): Promise<void> {
   const root = workspaceRoot();
   if (!root) {
-    store.setModelStatus("missing", "Open a workspace folder first");
+    store.setModelStatus("missing", "Сначала откройте папку workspace");
     treeProvider.setModel(null, null);
     return;
   }
@@ -56,7 +56,7 @@ async function reloadModel(showNotice = true): Promise<void> {
       void vscode.window.showWarningMessage(`GRACE Workbench: ${result.error}`);
     } else if (result.snapshot) {
       void vscode.window.showInformationMessage(
-        `GRACE model: ${result.snapshot.manifest.nodeCount} nodes / ${result.snapshot.manifest.edgeCount} edges`
+        `Модель GRACE: ${result.snapshot.manifest.nodeCount} узлов / ${result.snapshot.manifest.edgeCount} рёбер`
       );
     }
   }
@@ -183,24 +183,24 @@ function resolveSourceLocation(entityId: string): ResolvedSource | null {
 async function openSource(arg?: unknown): Promise<void> {
   const entityId = resolveEntityId(arg);
   if (!entityId) {
-    void vscode.window.showWarningMessage("GRACE: select an entity first");
+    void vscode.window.showWarningMessage("GRACE: сначала выберите сущность");
     return;
   }
   if (!index) {
     void vscode.window.showWarningMessage(
-      "GRACE: model not loaded. Run snapshot build and GRACE: Reload Model"
+      "GRACE: модель не загружена. Выполните snapshot build и GRACE: Перезагрузить модель"
     );
     return;
   }
   if (!index.nodeById.has(entityId)) {
-    void vscode.window.showWarningMessage(`GRACE: entity not in model: ${entityId}`);
+    void vscode.window.showWarningMessage(`GRACE: сущности нет в модели: ${entityId}`);
     return;
   }
 
   const loc = resolveSourceLocation(entityId);
   if (!loc) {
     void vscode.window.showWarningMessage(
-      `GRACE: no openable file for ${entityId} (no source/XML path in snapshot)`
+      `GRACE: нет открываемого файла для ${entityId} (в snapshot нет source/XML пути)`
     );
     return;
   }
@@ -216,7 +216,7 @@ async function openSource(arg?: unknown): Promise<void> {
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    void vscode.window.showErrorMessage(`GRACE: cannot open ${loc.absPath} (${msg})`);
+    void vscode.window.showErrorMessage(`GRACE: не удалось открыть ${loc.absPath} (${msg})`);
   }
 }
 
@@ -247,7 +247,7 @@ function panelHandlers() {
 
 async function focusEntity(): Promise<void> {
   if (!index) {
-    void vscode.window.showWarningMessage("Model not loaded");
+    void vscode.window.showWarningMessage("Модель не загружена");
     return;
   }
   const pick = await vscode.window.showQuickPick(
@@ -261,7 +261,7 @@ async function focusEntity(): Promise<void> {
     {
       matchOnDescription: true,
       matchOnDetail: true,
-      placeHolder: "Focus entity by ID or name (e.g. UC-001, M-APP-AUTO)…",
+      placeHolder: "Сущность по ID или имени (например UC-001, M-APP-AUTO)…",
     }
   );
   if (!pick) return;
@@ -305,7 +305,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.commands.registerCommand("graceWorkbench.showImpact", () => {
       const id = store.getState().selectedEntityId;
       if (id) openImpact(id);
-      else void vscode.window.showInformationMessage("Select an entity first");
+      else void vscode.window.showInformationMessage("Сначала выберите сущность");
     }),
     vscode.commands.registerCommand("graceWorkbench.navigateBack", () => {
       store.goBack();

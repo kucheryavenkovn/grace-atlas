@@ -15,7 +15,7 @@ export class InspectorView extends ItemView {
     return VIEW_INSPECTOR;
   }
   getDisplayText(): string {
-    return "GRACE Inspector";
+    return "Инспектор GRACE";
   }
   getIcon(): string {
     return "info";
@@ -37,14 +37,14 @@ export class InspectorView extends ItemView {
     const state = this.plugin.store.getState();
     const index = this.plugin.index;
     if (!index) {
-      container.createDiv({ cls: "grace-empty", text: "No model loaded" });
+      container.createDiv({ cls: "grace-empty", text: "Модель не загружена" });
       return;
     }
 
     if (state.selectedEdgeId) {
       const edge = index.edgeById.get(state.selectedEdgeId);
       if (edge) {
-        container.createEl("h3", { text: "Relation" });
+        container.createEl("h3", { text: "Связь" });
         this.kv(container, {
           id: edge.id,
           relation: edge.relation,
@@ -63,12 +63,12 @@ export class InspectorView extends ItemView {
 
     const id = state.selectedEntityId;
     if (!id) {
-      container.createDiv({ cls: "grace-empty", text: "Select an entity" });
+      container.createDiv({ cls: "grace-empty", text: "Выберите сущность" });
       return;
     }
     const node = index.nodeById.get(id);
     if (!node) {
-      container.createDiv({ cls: "grace-empty", text: `Unknown entity ${id}` });
+      container.createDiv({ cls: "grace-empty", text: `Неизвестная сущность ${id}` });
       return;
     }
 
@@ -76,18 +76,18 @@ export class InspectorView extends ItemView {
     container.createEl("h3", { text: `${node.id}` });
     container.createDiv({ text: node.displayName });
     this.kv(container, {
-      type: node.type,
-      status: node.status || "—",
+      тип: node.type,
+      статус: node.status || "—",
       findings: String(findings.length),
       sourceState: String(node.properties?.source_state || "declared"),
     });
 
     if (node.description) {
-      container.createEl("h4", { text: "Description" });
+      container.createEl("h4", { text: "Описание" });
       container.createDiv({ text: node.description });
     }
 
-    container.createEl("h4", { text: "Properties" });
+    container.createEl("h4", { text: "Свойства" });
     const props: Record<string, string> = {};
     for (const [k, v] of Object.entries(node.properties || {})) {
       if (v == null) continue;
@@ -97,10 +97,10 @@ export class InspectorView extends ItemView {
     }
     this.kv(container, props);
 
-    container.createEl("h4", { text: "Relations" });
+    container.createEl("h4", { text: "Связи" });
     const out = index.outgoing.get(id) || [];
     const inc = index.incoming.get(id) || [];
-    container.createDiv({ text: `Outgoing (${out.length})` });
+    container.createDiv({ text: `Исходящие (${out.length})` });
     for (const e of out.slice(0, 40)) {
       const a = container.createDiv({ cls: "grace-rel-link" });
       a.setText(`→ [${e.relation}] ${e.target} (${e.sourceState})`);
@@ -109,7 +109,7 @@ export class InspectorView extends ItemView {
         this.plugin.store.selectEntity(e.target, "inspector", { type: n?.type });
       };
     }
-    container.createDiv({ text: `Incoming (${inc.length})` });
+    container.createDiv({ text: `Входящие (${inc.length})` });
     for (const e of inc.slice(0, 40)) {
       const a = container.createDiv({ cls: "grace-rel-link" });
       a.setText(`← [${e.relation}] ${e.source} (${e.sourceState})`);
@@ -119,11 +119,11 @@ export class InspectorView extends ItemView {
       };
     }
 
-    container.createEl("h4", { text: "Source" });
+    container.createEl("h4", { text: "Источник" });
     this.kv(container, {
-      file: node.source?.file || node.links?.sourceUri || "—",
-      line: String(node.source?.line ?? "—"),
-      note: node.links?.obsidianNote || "—",
+      файл: node.source?.file || node.links?.sourceUri || "—",
+      строка: String(node.source?.line ?? "—"),
+      заметка: node.links?.obsidianNote || "—",
       vscode: node.links?.vscodeUri || "—",
     });
 
@@ -138,15 +138,15 @@ export class InspectorView extends ItemView {
     }
 
     const actions = container.createDiv({ cls: "grace-actions" });
-    actions.createEl("button", { text: "Focus Diagram" }).onclick = () =>
+    actions.createEl("button", { text: "Фокус на диаграмме" }).onclick = () =>
       this.plugin.openFocusedDiagram(id);
-    actions.createEl("button", { text: "Open Note" }).onclick = () => this.plugin.openNote(id);
-    actions.createEl("button", { text: "Open Source" }).onclick = () => this.plugin.openSource(id);
+    actions.createEl("button", { text: "Заметка" }).onclick = () => this.plugin.openNote(id);
+    actions.createEl("button", { text: "Исходник" }).onclick = () => this.plugin.openSource(id);
     actions.createEl("button", { text: "VS Code" }).onclick = () => this.plugin.openVsCode(id);
-    actions.createEl("button", { text: "Traceability" }).onclick = () =>
+    actions.createEl("button", { text: "Трассируемость" }).onclick = () =>
       this.plugin.activateDiagnosticsTab("traceability");
     actions.createEl("button", { text: "Impact" }).onclick = () => this.plugin.openImpact(id);
-    actions.createEl("button", { text: "Copy ID" }).onclick = () =>
+    actions.createEl("button", { text: "Копировать ID" }).onclick = () =>
       navigator.clipboard.writeText(id);
   }
 

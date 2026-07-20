@@ -17,7 +17,7 @@ export class ModelBrowserView extends ItemView {
     return VIEW_BROWSER;
   }
   getDisplayText(): string {
-    return "GRACE Model";
+    return "Модель GRACE";
   }
   getIcon(): string {
     return "layers";
@@ -46,7 +46,7 @@ export class ModelBrowserView extends ItemView {
     const toolbar = el.createDiv({ cls: "grace-wb-toolbar" });
     const search = toolbar.createEl("input", {
       type: "search",
-      attr: { placeholder: "Filter ID / name…" },
+      attr: { placeholder: "Фильтр ID / имени…" },
       value: state.browserFilter.text,
     });
     search.oninput = () => {
@@ -65,7 +65,7 @@ export class ModelBrowserView extends ItemView {
     const tree = el.createDiv({ cls: "grace-tree" });
     const index = this.plugin.index;
     if (!index) {
-      tree.createDiv({ cls: "grace-empty", text: state.lastError || "Model not loaded" });
+      tree.createDiv({ cls: "grace-empty", text: state.lastError || "Модель не загружена" });
       return;
     }
 
@@ -212,7 +212,7 @@ export class ModelBrowserView extends ItemView {
         more.style.paddingLeft = `${30 + depth * 12}px`;
         more.createSpan({
           cls: "grace-tree-label",
-          text: `… +${nodes.length - limit} more (use search)`,
+          text: `… ещё ${nodes.length - limit} (воспользуйтесь поиском)`,
         });
       }
     }
@@ -251,25 +251,25 @@ export class ModelBrowserView extends ItemView {
       ev.preventDefault();
       const menu = new Menu();
       menu.addItem((i) =>
-        i.setTitle("Show in Diagram").onClick(() => this.plugin.openFocusedDiagram(n.id))
+        i.setTitle("Показать на диаграмме").onClick(() => this.plugin.openFocusedDiagram(n.id))
       );
       menu.addItem((i) =>
-        i.setTitle("Open Note").onClick(() => this.plugin.openNote(n.id))
+        i.setTitle("Открыть заметку").onClick(() => this.plugin.openNote(n.id))
       );
       menu.addItem((i) =>
-        i.setTitle("Open Source").onClick(() => this.plugin.openSource(n.id))
+        i.setTitle("Открыть исходник").onClick(() => this.plugin.openSource(n.id))
       );
       menu.addItem((i) =>
-        i.setTitle("Show Traceability").onClick(() => {
+        i.setTitle("Трассируемость").onClick(() => {
           this.plugin.store.selectEntity(n.id, "browser", { type: n.type });
           this.plugin.activateDiagnosticsTab("traceability");
         })
       );
       menu.addItem((i) =>
-        i.setTitle("Show Impact").onClick(() => this.plugin.openImpact(n.id))
+        i.setTitle("Impact").onClick(() => this.plugin.openImpact(n.id))
       );
       menu.addItem((i) =>
-        i.setTitle("Copy ID").onClick(() => navigator.clipboard.writeText(n.id))
+        i.setTitle("Копировать ID").onClick(() => navigator.clipboard.writeText(n.id))
       );
       menu.showAtMouseEvent(ev);
     };

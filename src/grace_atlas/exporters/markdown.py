@@ -25,9 +25,9 @@ from grace_atlas.model import AtlasGraph, Edge, EdgeType, Node, NodeType
 from grace_atlas.source_links import file_open_link
 
 GENERATED_BANNER = (
-    "<!-- GRACE Atlas: GENERATED FILE. Do not edit by hand — manual changes will be lost on rebuild. -->"
+    "<!-- GRACE Atlas: СГЕНЕРИРОВАННЫЙ ФАЙЛ. Не редактируйте вручную — изменения пропадут при rebuild. -->"
 )
-HUMAN_BANNER = "> Этот файл сгенерирован GRACE Atlas. Ручные изменения могут быть потеряны."
+HUMAN_BANNER = "> Этот файл сгенерирован GRACE Atlas. Ручные изменения могут быть потеряны при rebuild."
 
 
 def _yaml_escape(value: str) -> str:
@@ -196,11 +196,11 @@ def _problems_section(node: Node) -> list[str]:
 
 def _nav_section(node: Node, config: AtlasConfig) -> list[str]:
     lines = ["## Навигация", ""]
-    lines.append("- Local Graph: Command palette → **Open local graph** (depth 1–2).")
+    lines.append("- Local Graph: палитра команд → **Open local graph** (глубина 1–2).")
     lines.append("- Workbench: [[Dashboards/Workbench]].")
-    lines.append("- Traceability: [[Dashboards/Traceability-Matrix]].")
+    lines.append("- Трассируемость: [[Dashboards/Traceability-Matrix]].")
     if node.source_ref and node.source_ref.path:
-        lines.append(f"- XML/source artifact: `{node.source_ref.path}`")
+        lines.append(f"- XML/исходный артефакт: `{node.source_ref.path}`")
     # code open
     paths = list(node.properties.get("paths") or [])
     if node.type in {NodeType.SOURCE_FILE, NodeType.TEST_FILE}:
@@ -215,7 +215,7 @@ def _nav_section(node: Node, config: AtlasConfig) -> list[str]:
                 lines.append(
                     f"- VS Code: {file_open_link(abs_p, label=p, vscode_enabled=config.vscode_enabled)}"
                 )
-    lines.append("- Canvas: [[Canvas/Requirement-Traceability.canvas|Traceability canvas]]")
+    lines.append("- Canvas: [[Canvas/Requirement-Traceability.canvas|Трассируемость (canvas)]]")
     lines.append("")
     return lines
 
@@ -225,9 +225,9 @@ def _classification_table(node: Node, graph: AtlasGraph) -> list[str]:
     rows = [
         ("Тип", props.get("grace_type") or node.type),
         ("Статус", node.status or "unknown"),
-        ("Priority", props.get("priority") or "—"),
-        ("requirement_type", props.get("requirement_type") or "—"),
-        ("source_state", props.get("source_state") or "—"),
+        ("Приоритет", props.get("priority") or "—"),
+        ("Тип требования", props.get("requirement_type") or "—"),
+        ("Состояние источника", props.get("source_state") or "—"),
         ("Источник", props.get("source_file") or (node.source_ref.path if node.source_ref else "—")),
     ]
     if props.get("source_line") or (node.source_ref and node.source_ref.line_start):
@@ -355,9 +355,9 @@ def render_index(title: str, nodes: Iterable[Node], *, graph_tag: str = "grace/i
         "",
         f"# {title}",
         "",
-        f"Count: **{len(nodes_list)}**",
+        f"Всего: **{len(nodes_list)}**",
         "",
-        "> Index pages: exclude tag `grace/index` from Graph View.",
+        "> Индексные страницы: исключите тег `grace/index` из Graph View.",
         "",
         "Workbench: [[Dashboards/Workbench]] · Base: [[Views/Requirements.base]]",
         "",
@@ -391,41 +391,41 @@ def render_home(
         "",
         f"# GRACE Atlas — {config.project_name}",
         "",
-        f"Generated at: **{generated_at}** (UTC)",
+        f"Сгенерировано: **{generated_at}** (UTC)",
         "",
-        "Read-only projection. **Start here for humans:** [[Dashboards/Workbench]].",
+        "Проекция только для чтения. **Старт для человека:** [[Dashboards/Workbench]].",
         "",
-        "## Workbench (primary UI)",
+        "## Workbench (основной UI)",
         "",
-        "- [[Dashboards/Workbench|Workbench home]]",
-        "- [[Views/Requirements.base|Requirements registry]]",
-        "- [[Dashboards/Requirement-Tree|Requirement tree]]",
-        "- [[Dashboards/Traceability-Matrix|Traceability matrix]]",
-        "- [[Dashboards/User-Journey-Video2PPTX|User journey]]",
-        "- [[Dashboards/How-to-use|How to use]]",
+        "- [[Dashboards/Workbench|Домашняя страница Workbench]]",
+        "- [[Views/Requirements.base|Реестр требований]]",
+        "- [[Dashboards/Requirement-Tree|Дерево требований / UC]]",
+        "- [[Dashboards/Traceability-Matrix|Матрица трассируемости]]",
+        "- [[Dashboards/User-Journey-Video2PPTX|Пользовательский сценарий]]",
+        "- [[Dashboards/How-to-use|Как пользоваться]]",
         "",
-        "## Canvas (secondary)",
+        "## Canvas (дополнительно)",
         "",
-        "- [[Canvas/Project-Overview.canvas|Project Overview]]",
-        "- [[Canvas/Current-Phase.canvas|Current Phase]]",
+        "- [[Canvas/Project-Overview.canvas|Обзор проекта]]",
+        "- [[Canvas/Current-Phase.canvas|Текущая фаза]]",
         "- [[Canvas/User-Journey.canvas|User Journey]]",
-        "- [[Canvas/Requirement-Traceability.canvas|Requirement Traceability]]",
-        "- [[Canvas/Verification-Gaps.canvas|Verification Gaps]]",
+        "- [[Canvas/Requirement-Traceability.canvas|Трассируемость требований]]",
+        "- [[Canvas/Verification-Gaps.canvas|Пробелы верификации]]",
         "",
-        "## Diagnostics",
+        "## Диагностика",
         "",
-        "- [[Diagnostics/Summary]]",
-        "- [[Diagnostics/Gaps-Registry]]",
-        "- [[Diagnostics/Broken-References]]",
-        "- [[Diagnostics/Orphan-Requirements]]",
-        "- [[Diagnostics/Unverified-Modules]]",
+        "- [[Diagnostics/Summary|Сводка]]",
+        "- [[Diagnostics/Gaps-Registry|Реестр gaps]]",
+        "- [[Diagnostics/Broken-References|Битые ссылки]]",
+        "- [[Diagnostics/Orphan-Requirements|Сироты требований]]",
+        "- [[Diagnostics/Unverified-Modules|Непроверенные модули]]",
         "",
-        "## Stats",
+        "## Статистика",
         "",
-        f"- Nodes: **{stats['nodes']}** · Edges: **{stats['edges']}**",
+        f"- Узлы: **{stats['nodes']}** · Рёбра: **{stats['edges']}**",
         f"- Gaps: **{gap_summary.get('findings', 0)}** `{gap_summary.get('by_severity', {})}`",
         "",
-        "### Artifacts",
+        "### Артефакты GRACE (пути, без изменения XML)",
         "",
     ]
     for key in (
@@ -440,14 +440,14 @@ def render_home(
     lines.extend(
         [
             "",
-            "## Rebuild",
+            "## Пересборка",
             "",
             "```powershell",
             "python tools/grace_atlas.py build --project-root .",
             "```",
             "",
             "---",
-            "_Home does **not** link every entity (avoids star-graph)._",
+            "_Home **не** ссылается на каждую сущность (чтобы не получить star-graph)._",
             "",
         ]
     )

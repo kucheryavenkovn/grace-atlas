@@ -110,7 +110,7 @@ def test_wiki_links_in_note():
     assert node is not None
     md = render_node_note(node, graph, cfg)
     assert "generated: true" in md
-    assert "GENERATED FILE" in md
+    assert "СГЕНЕРИРОВАННЫЙ ФАЙЛ" in md or "GENERATED FILE" in md
     assert "Modules/M-CORE" in md
 
 

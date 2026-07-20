@@ -81,8 +81,8 @@ export class ModelLoaderService {
         snapshot: null,
         index: this.lastGood?.index ?? null,
         error:
-          "Snapshot not found. Run: python -m grace_atlas snapshot build --project-root . " +
-          "(expected .grace-atlas/model/manifest.json relative to vault)",
+          "Snapshot не найден. Выполните: python -m grace_atlas snapshot build --project-root . " +
+          "(ожидается .grace-atlas/model/manifest.json относительно vault)",
       };
       return result;
     }
@@ -98,7 +98,7 @@ export class ModelLoaderService {
           status: "incompatible",
           snapshot: this.lastGood?.snapshot ?? null,
           index: this.lastGood?.index ?? null,
-          error: `Incompatible schemaVersion ${manifest.schemaVersion} (supported major ${SUPPORTED_SCHEMA_MAJOR})`,
+          error: `Несовместимая schemaVersion ${manifest.schemaVersion} (поддерживается major ${SUPPORTED_SCHEMA_MAJOR})`,
         };
       }
 
@@ -110,7 +110,7 @@ export class ModelLoaderService {
 
       const model = await readJsonRetry<WorkbenchModel>(this.app, modelPath);
       if (!Array.isArray(model.nodes) || !Array.isArray(model.edges)) {
-        throw new Error("model.json missing nodes/edges arrays");
+        throw new Error("model.json: отсутствуют массивы nodes/edges");
       }
       const diagnostics = await readJsonRetry<{
         schemaVersion: string;
@@ -187,7 +187,7 @@ export class ModelLoaderService {
           status: "stale",
           snapshot: this.lastGood.snapshot,
           index: this.lastGood.index,
-          error: `Failed to load new snapshot (${msg}); keeping last good model`,
+          error: `Не удалось загрузить snapshot (${msg}); оставлена последняя рабочая модель`,
         };
       }
       return {

@@ -1,7 +1,7 @@
 {
   "name": "grace-workbench",
   "displayName": "GRACE Workbench",
-  "description": "Rose-like GRACE CASE workbench for VS Code. Reads normalized .grace-atlas/model snapshot (no GRACE XML parsing).",
+  "description": "CASE Workbench для GRACE в VS Code. Читает нормализованный snapshot .grace-atlas/model (без разбора GRACE XML).",
   "version": "0.4.0",
   "publisher": "grace-atlas",
   "repository": {
@@ -29,42 +29,42 @@
     "commands": [
       {
         "command": "graceWorkbench.open",
-        "title": "GRACE: Open Workbench",
+        "title": "GRACE: Открыть Workbench",
         "icon": "$(layers)"
       },
       {
         "command": "graceWorkbench.reload",
-        "title": "GRACE: Reload Model",
+        "title": "GRACE: Перезагрузить модель",
         "icon": "$(refresh)"
       },
       {
         "command": "graceWorkbench.focusEntity",
-        "title": "GRACE: Focus Entity",
+        "title": "GRACE: Перейти к сущности",
         "icon": "$(search)"
       },
       {
         "command": "graceWorkbench.openSource",
-        "title": "GRACE: Open Current Entity Source"
+        "title": "GRACE: Открыть исходник сущности"
       },
       {
         "command": "graceWorkbench.showTraceability",
-        "title": "GRACE: Show Traceability"
+        "title": "GRACE: Показать трассируемость"
       },
       {
         "command": "graceWorkbench.showImpact",
-        "title": "GRACE: Show Impact"
+        "title": "GRACE: Показать impact"
       },
       {
         "command": "graceWorkbench.navigateBack",
-        "title": "GRACE: Navigate Back"
+        "title": "GRACE: Назад"
       },
       {
         "command": "graceWorkbench.navigateForward",
-        "title": "GRACE: Navigate Forward"
+        "title": "GRACE: Вперёд"
       },
       {
         "command": "graceWorkbench.refreshTree",
-        "title": "GRACE: Refresh Model Browser",
+        "title": "GRACE: Обновить браузер модели",
         "icon": "$(refresh)"
       }
     ],
@@ -81,7 +81,7 @@
       "grace-workbench": [
         {
           "id": "graceWorkbench.browser",
-          "name": "Model Browser"
+          "name": "Браузер модели"
         }
       ]
     },
@@ -122,12 +122,12 @@
         "graceWorkbench.modelPath": {
           "type": "string",
           "default": ".grace-atlas/model",
-          "description": "Path to workbench snapshot directory relative to workspace folder."
+          "description": "Каталог workbench snapshot относительно корня workspace."
         },
         "graceWorkbench.autoLoad": {
           "type": "boolean",
           "default": true,
-          "description": "Load snapshot when extension activates."
+          "description": "Загружать snapshot при активации расширения."
         }
       }
     }

@@ -26,7 +26,7 @@ export class DiagramView extends ItemView {
     return VIEW_DIAGRAM;
   }
   getDisplayText(): string {
-    return "GRACE Diagram";
+    return "Диаграмма GRACE";
   }
   getIcon(): string {
     return "git-fork";
@@ -38,14 +38,14 @@ export class DiagramView extends ItemView {
     container.addClass("grace-workbench-root");
 
     const toolbar = container.createDiv({ cls: "grace-wb-toolbar" });
-    toolbar.createEl("button", { text: "Fit" }).onclick = () => this.host?.fit();
+    toolbar.createEl("button", { text: "Вписать" }).onclick = () => this.host?.fit();
     toolbar.createEl("button", { text: "Layout" }).onclick = () => {
       this.lastKey = "";
       this.rebuild();
     };
     const depthSel = toolbar.createEl("select");
     for (const d of [1, 2, 3, 4]) {
-      depthSel.createEl("option", { text: `depth ${d}`, value: String(d) });
+      depthSel.createEl("option", { text: `глубина ${d}`, value: String(d) });
     }
     depthSel.value = String(this.plugin.store.getState().diagramFilter.depth);
     depthSel.onchange = () => {
@@ -58,12 +58,12 @@ export class DiagramView extends ItemView {
     this.cyEl = hostWrap.createDiv({ cls: "cy" });
     const legend = hostWrap.createDiv({ cls: "grace-diagram-legend" });
     legend.setText(
-      "Shapes: UC ellipse · Module rounded · File rect · V diamond · Req hex\n" +
-        "Edges: solid=declared · dashed=inferred · red dashed=unresolved"
+      "Формы: UC — эллипс · Module — скругл. · File — прямоуг. · V — ромб · Req — hex\n" +
+        "Рёбра: сплошная=declared · пунктир=inferred · красный пунктир=unresolved"
     );
     // simple minimap placeholder
     const mini = hostWrap.createDiv({ cls: "grace-minimap" });
-    mini.setText("Overview");
+    mini.setText("Обзор");
 
     this.host = new CytoscapeHost(this.cyEl, {
       onSelectNode: (id) => {

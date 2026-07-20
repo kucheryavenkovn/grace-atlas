@@ -245,7 +245,7 @@ async function renderDiagram(): Promise<void> {
 function renderTree(): void {
   el.tree.innerHTML = "";
   if (!index) {
-    el.tree.innerHTML = `<div class="empty">No model</div>`;
+    el.tree.innerHTML = `<div class="empty">Нет модели</div>`;
     return;
   }
 
@@ -260,11 +260,11 @@ function renderTree(): void {
 
   const groups: Array<[string, string[]]> = [
     ["Use Cases", ["UseCase"]],
-    ["Modules", ["Module"]],
-    ["Requirements", ["Requirement", "Constraint", "Risk"]],
-    ["Verification", ["Verification", "CriticalFlow", "Evidence"]],
-    ["Source Files", ["SourceFile", "TestFile"]],
-    ["Phases", ["Phase", "Step", "OperationalPacket"]],
+    ["Модули", ["Module"]],
+    ["Требования", ["Requirement", "Constraint", "Risk"]],
+    ["Верификация", ["Verification", "CriticalFlow", "Evidence"]],
+    ["Исходники", ["SourceFile", "TestFile"]],
+    ["Фазы", ["Phase", "Step", "OperationalPacket"]],
   ];
 
   for (const [label, types] of groups) {
@@ -284,7 +284,7 @@ function renderTree(): void {
     if (nodes.length > 60) {
       const more = document.createElement("div");
       more.className = "tree-node";
-      more.textContent = `… +${nodes.length - 60} (use search)`;
+      more.textContent = `… ещё ${nodes.length - 60} (поиск)`;
       el.tree.appendChild(more);
     }
   }
@@ -302,12 +302,12 @@ function appendEntity(parent: HTMLElement, n: WorkbenchNode): void {
 
 function renderInspector(): void {
   if (!index || !selectedId) {
-    el.inspector.innerHTML = `<div class="empty">Select an entity</div>`;
+    el.inspector.innerHTML = `<div class="empty">Выберите сущность</div>`;
     return;
   }
   const n = index.nodeById.get(selectedId);
   if (!n) {
-    el.inspector.innerHTML = `<div class="empty">Unknown ${selectedId}</div>`;
+    el.inspector.innerHTML = `<div class="empty">Неизвестно: ${selectedId}</div>`;
     return;
   }
   const fc = index.findingsByNode.get(n.id) || [];
@@ -317,20 +317,20 @@ function renderInspector(): void {
   let html = `<h3 style="margin:0 0 4px">${esc(n.id)}</h3>
     <div>${esc(n.displayName)}</div>
     <div class="kv">
-      <div class="k">type</div><div class="v">${esc(n.type)}</div>
-      <div class="k">status</div><div class="v">${esc(n.status || "—")}</div>
+      <div class="k">тип</div><div class="v">${esc(n.type)}</div>
+      <div class="k">статус</div><div class="v">${esc(n.status || "—")}</div>
       <div class="k">findings</div><div class="v">${fc.length}</div>
-      <div class="k">source</div><div class="v">${esc(n.source?.file || n.links?.sourceUri || "—")}</div>
-      <div class="k">line</div><div class="v">${n.source?.line ?? "—"}</div>
+      <div class="k">источник</div><div class="v">${esc(n.source?.file || n.links?.sourceUri || "—")}</div>
+      <div class="k">строка</div><div class="v">${n.source?.line ?? "—"}</div>
     </div>`;
   if (n.description) {
-    html += `<h4>Description</h4><div>${esc(n.description)}</div>`;
+    html += `<h4>Описание</h4><div>${esc(n.description)}</div>`;
   }
-  html += `<h4>Outgoing (${out.length})</h4>`;
+  html += `<h4>Исходящие (${out.length})</h4>`;
   for (const e of out.slice(0, 30)) {
     html += `<span class="rel" data-id="${esc(e.target)}">→ [${esc(e.relation)}] ${esc(e.target)} (${esc(e.sourceState)})</span>`;
   }
-  html += `<h4>Incoming (${inc.length})</h4>`;
+  html += `<h4>Входящие (${inc.length})</h4>`;
   for (const e of inc.slice(0, 30)) {
     html += `<span class="rel" data-id="${esc(e.source)}">← [${esc(e.relation)}] ${esc(e.source)} (${esc(e.sourceState)})</span>`;
   }
@@ -372,16 +372,16 @@ function renderBottom(): void {
 
   if (bottomTab === "trace") {
     if (!selectedId) {
-      el.bottom.innerHTML = `<div class="empty">Select an entity</div>`;
+      el.bottom.innerHTML = `<div class="empty">Выберите сущность</div>`;
       return;
     }
     const out = index.outgoing.get(selectedId) || [];
     const inc = index.incoming.get(selectedId) || [];
-    let html = `<div><b>Downstream</b></div>`;
+    let html = `<div><b>Вниз по потоку</b></div>`;
     for (const e of out) {
       html += `<div class="rel" data-id="${esc(e.target)}">${esc(e.relation)} → ${esc(e.target)} [${esc(e.sourceState)}]</div>`;
     }
-    html += `<div style="margin-top:8px"><b>Upstream</b></div>`;
+    html += `<div style="margin-top:8px"><b>Вверх по потоку</b></div>`;
     for (const e of inc) {
       html += `<div class="rel" data-id="${esc(e.source)}">${esc(e.relation)} ← ${esc(e.source)} [${esc(e.sourceState)}]</div>`;
     }
@@ -398,8 +398,8 @@ function renderBottom(): void {
   // problems
   let list = findings;
   if (selectedId) list = list.filter((f) => f.entityId === selectedId);
-  let html = `<div>${selectedId ? `Findings for ${esc(selectedId)}` : "All findings"}: ${list.length}</div>
-    <table><tr><th>sev</th><th>code</th><th>entity</th><th>message</th></tr>`;
+  let html = `<div>${selectedId ? `Findings для ${esc(selectedId)}` : "Все findings"}: ${list.length}</div>
+    <table><tr><th>sev</th><th>код</th><th>сущность</th><th>сообщение</th></tr>`;
   for (const f of list.slice(0, 150)) {
     html += `<tr class="clickable" data-id="${esc(f.entityId)}">
       <td class="sev-${esc(f.severity)}">${esc(f.severity)}</td>

@@ -260,10 +260,10 @@ export class WorkbenchPanel {
   ${bundleNote}
   <div id="app">
     <div class="toolbar">
-      <input id="search" type="search" placeholder="Filter / jump ID…" />
-      <button id="btnBack" title="Back">←</button>
-      <button id="btnFwd" title="Forward">→</button>
-      <label>depth
+      <input id="search" type="search" placeholder="Фильтр / переход по ID…" />
+      <button id="btnBack" title="Назад">←</button>
+      <button id="btnFwd" title="Вперёд">→</button>
+      <label>глубина
         <select id="depth">
           <option value="1">1</option>
           <option value="2">2</option>
@@ -271,30 +271,30 @@ export class WorkbenchPanel {
           <option value="4">4</option>
         </select>
       </label>
-      <button id="btnFit">Fit</button>
-      <button id="btnSource">Open Source</button>
+      <button id="btnFit">Вписать</button>
+      <button id="btnSource">Исходник</button>
       <button id="btnImpact">Impact</button>
-      <span id="status" class="status">loading</span>
+      <span id="status" class="status">загрузка</span>
     </div>
     <div class="main">
       <div class="browser">
-        <div class="pane-title">Model Browser</div>
+        <div class="pane-title">Браузер модели</div>
         <div id="tree"></div>
       </div>
       <div class="diagram">
-        <div class="pane-title">Diagram</div>
+        <div class="pane-title">Диаграмма</div>
         <div id="cy"></div>
-        <div class="legend">solid=declared · dashed=inferred · red=unresolved</div>
+        <div class="legend">сплошная=declared · пунктир=inferred · красный=unresolved</div>
       </div>
       <div class="inspector">
-        <div class="pane-title">Inspector</div>
-        <div id="inspector" class="empty">Select an entity</div>
+        <div class="pane-title">Инспектор</div>
+        <div id="inspector" class="empty">Выберите сущность</div>
       </div>
       <div class="bottom">
         <div class="tabs">
-          <span class="tab active" data-tab="problems">Problems</span>
-          <span class="tab" data-tab="trace">Traceability</span>
-          <span class="tab" data-tab="history">History</span>
+          <span class="tab active" data-tab="problems">Проблемы</span>
+          <span class="tab" data-tab="trace">Трассируемость</span>
+          <span class="tab" data-tab="history">История</span>
         </div>
         <div id="bottom" class="tab-body"></div>
       </div>
