@@ -24,8 +24,11 @@ from grace_atlas import __version__
 from grace_atlas.config import load_config
 from grace_atlas.diagnostics import build_gap_report, render_gap_report_markdown, status_counts
 from grace_atlas.discovery import discover_artifacts
+from grace_atlas.exporters.notes import note_relpath
 from grace_atlas.exporters.obsidian import VaultSafetyError, export_vault
+from grace_atlas.findings import filter_triaged, group_by_code, triage_findings
 from grace_atlas.graph import build_graph, graph_to_jsonable
+from grace_atlas.show_card import build_card_data, format_card
 from grace_atlas.source_links import obsidian_open_uri
 from grace_atlas.trace import format_trace
 
@@ -83,9 +86,25 @@ def _build_parser() -> argparse.ArgumentParser:
     tr.add_argument("--no-source", action="store_true")
     tr.add_argument("--verbose", action="store_true")
 
-    op = sub.add_parser("open", help="Open generated vault Home.md via Obsidian URI")
+    sh = sub.add_parser("show", help="Human card for entity id (workbench)")
+    _add_project_root(sh)
+    sh.add_argument("entity_id", help="Entity id, e.g. UC-001 or M-APP-AUTO")
+    sh.add_argument(
+        "--format",
+        dest="show_format",
+        choices=["human", "table", "json"],
+        default="human",
+        help="Output format (default: human)",
+    )
+    sh.add_argument("--no-source", action="store_true")
+    sh.add_argument("--open", action="store_true", help="Also open note via obsidian:// URI")
+    sh.add_argument("--output", type=Path, default=None, help="Vault path override")
+    sh.add_argument("--verbose", action="store_true")
+
+    op = sub.add_parser("open", help="Open generated vault Home.md or entity note via Obsidian URI")
     _add_project_root(op)
     op.add_argument("--output", type=Path, default=None, help="Vault path override")
+    op.add_argument("--entity", type=str, default=None, help="Open entity card instead of Home")
     op.add_argument("--verbose", action="store_true")
 
     # Legacy / utility
@@ -93,10 +112,22 @@ def _build_parser() -> argparse.ArgumentParser:
     _add_project_root(disc)
     disc.add_argument("--json", action="store_true")
 
-    gaps = sub.add_parser("gaps", help="Print gap report markdown")
+    gaps = sub.add_parser("gaps", help="Print gap report / triage")
     _add_project_root(gaps)
     gaps.add_argument("--no-source", action="store_true")
     gaps.add_argument("--json", action="store_true")
+    gaps.add_argument("--severity", choices=["error", "warning", "info"], default=None)
+    gaps.add_argument("--actionable", action="store_true")
+    gaps.add_argument("--current-phase", action="store_true")
+    gaps.add_argument("--user-journey", action="store_true")
+    gaps.add_argument(
+        "--group-by",
+        dest="group_by",
+        choices=["code"],
+        default=None,
+        help="Group findings (e.g. --group-by code)",
+    )
+    gaps.add_argument("--include-suppressed", action="store_true")
 
     # Aliases
     gen = sub.add_parser("generate", help="Alias for build")
@@ -161,14 +192,51 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "open":
         config = _load(args)
-        home = config.resolve_vault() / config.home_note
-        if not home.is_file():
-            print(f"Home.md not found at {home}. Run: grace-atlas build --project-root .", file=sys.stderr)
-            print(f"Vault directory: {config.resolve_vault()}")
+        vault = config.resolve_vault()
+        entity = getattr(args, "entity", None)
+        if entity:
+            graph, _ = build_graph(config, include_source=False)
+            node = graph.get(entity)
+            if node is None:
+                print(f"Entity not found: {entity}", file=sys.stderr)
+                return 1
+            target = vault / note_relpath(node)
+        else:
+            target = vault / config.home_note
+        if not target.is_file():
+            print(f"Note not found at {target}. Run: grace-atlas build --project-root .", file=sys.stderr)
+            print(f"Vault directory: {vault}")
             return 1
-        return _try_open_vault(home)
+        return _try_open_vault(target)
 
     include_source = not getattr(args, "no_source", False)
+
+    if args.command == "show":
+        config = _load(args)
+        graph, _ = build_graph(config, include_source=include_source)
+        from grace_atlas.diagnostics import build_gap_report as _bgr
+        from grace_atlas.enrichment import enrich_graph as _enr
+
+        _enr(graph, _bgr(graph))
+        node = graph.get(args.entity_id)
+        if node is None:
+            hits = [k for k in graph.nodes if k.upper() == args.entity_id.upper()]
+            if len(hits) == 1:
+                node = graph.get(hits[0])
+        if node is None:
+            print(f"Entity not found: {args.entity_id}", file=sys.stderr)
+            return 1
+        rel = note_relpath(node)
+        vault = config.resolve_vault()
+        abs_note = vault / rel
+        card = build_card_data(graph, node, str(abs_note))
+        sys.stdout.write(format_card(card, fmt=getattr(args, "show_format", "human") or "human"))
+        if getattr(args, "open", False):
+            if not abs_note.is_file():
+                print("Note missing — run build first.", file=sys.stderr)
+                return 1
+            return _try_open_vault(abs_note)
+        return 0
 
     if args.command == "status":
         config = _load(args)
@@ -204,10 +272,60 @@ def main(argv: list[str] | None = None) -> int:
         config = _load(args)
         graph, _ = build_graph(config, include_source=include_source)
         report = build_gap_report(graph)
+        triaged = triage_findings(
+            graph,
+            report,
+            suppress=config.diagnostics_suppress,
+            expected_patterns=config.diagnostics_expected_patterns,
+        )
+        filtered = filter_triaged(
+            triaged,
+            severity=getattr(args, "severity", None),
+            actionable=bool(getattr(args, "actionable", False)),
+            current_phase=bool(getattr(args, "current_phase", False)),
+            user_journey=bool(getattr(args, "user_journey", False)),
+            include_suppressed=bool(getattr(args, "include_suppressed", False)),
+        )
+        if getattr(args, "group_by", None) == "code":
+            groups = group_by_code(filtered)
+            if getattr(args, "json", False):
+                print(json.dumps(groups, indent=2, ensure_ascii=False))
+            else:
+                print(f"{'code':32} {'sev':8} {'count':>6}  action")
+                for g in groups:
+                    print(
+                        f"{g['code'][:32]:32} {g['severity'][:8]:8} {g['count']:6}  "
+                        f"{g['suggested_action'][:60]}"
+                    )
+            return 0
         if getattr(args, "json", False):
-            print(json.dumps({"summary": report.summary}, indent=2, ensure_ascii=False))
+            print(
+                json.dumps(
+                    {
+                        "summary": report.summary,
+                        "filtered": len(filtered),
+                        "findings": [f.as_dict() for f in filtered[:500]],
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
         else:
-            print(render_gap_report_markdown(report))
+            if any(
+                [
+                    getattr(args, "severity", None),
+                    getattr(args, "actionable", False),
+                    getattr(args, "current_phase", False),
+                    getattr(args, "user_journey", False),
+                ]
+            ):
+                print(f"Triaged findings: {len(filtered)} (of {len(triaged)})\n")
+                for f in filtered[:100]:
+                    print(f"[{f.severity}] {f.code} {f.entity_id}: {f.message[:100]}")
+                if len(filtered) > 100:
+                    print(f"... and {len(filtered) - 100} more")
+            else:
+                print(render_gap_report_markdown(report))
         return 0
 
     if args.command in {"build", "generate"}:

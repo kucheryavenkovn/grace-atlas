@@ -46,6 +46,22 @@ Example output from the minimal fixture: [`examples/grace-graphs/`](examples/gra
 Details: [`tools/grace_graphs/README.md`](tools/grace_graphs/README.md).
 
 
+## Phase 2 — Human workbench
+
+После `build` откройте vault в Obsidian и начните с:
+
+1. **[[Dashboards/Workbench]]** — главный вход (не глобальный Graph).
+2. **Views/Requirements.base** — реестр UC/требований (plugin Bases).
+3. Клик по строке → карточка → **Open local graph**.
+4. Переходы: UC → VF → Module → Source → Tests.
+
+Также: `Dashboards/Requirement-Tree`, `Traceability-Matrix`, `User-Journey-Video2PPTX`, `Diagnostics/Gaps-Registry`.
+
+```powershell
+python -m grace_atlas show UC-001 --project-root .
+python -m grace_atlas open --project-root . --entity UC-001
+```
+
 ## Demo
 
 **Part 1** — артефакты GRACE (заметки vault, сгенерированные Atlas):

@@ -23,6 +23,8 @@ from typing import Any
 
 from grace_atlas.config import AtlasConfig
 from grace_atlas.diagnostics import GapReport, build_gap_report, render_diagnostics_pages
+from grace_atlas.enrichment import enrich_graph
+from grace_atlas.exporters.bases import all_bases
 from grace_atlas.exporters.canvas import build_all_canvases, validate_canvas_file_refs
 from grace_atlas.exporters.markdown import (
     GENERATED_BANNER,
@@ -32,6 +34,9 @@ from grace_atlas.exporters.markdown import (
     utc_now_iso,
 )
 from grace_atlas.exporters.notes import TYPE_FOLDERS, note_relpath
+from grace_atlas.bases_validate import validate_bases_dir
+from grace_atlas.exporters.workbench import render_workbench_pages
+from grace_atlas.findings import triage_findings
 from grace_atlas.graph import graph_to_jsonable
 from grace_atlas.model import AtlasGraph
 
@@ -94,7 +99,7 @@ def assert_safe_vault_path(vault: Path, repo_root: Path) -> None:
 def _write_marker(vault: Path, config: AtlasConfig, generated_at: str) -> None:
     payload = {
         "tool": "grace-atlas",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "project": config.project_name,
         "generated_at": generated_at,
         "marker": MARKER_NAME,
@@ -110,6 +115,9 @@ def _populate_vault(
     *,
     generated_at: str,
 ) -> dict[str, Any]:
+    # Annotate nodes for workbench properties before rendering notes
+    enrich_graph(graph, report)
+
     written = 0
     note_paths: set[str] = set()
     by_type: dict[str, list] = {}
@@ -135,6 +143,28 @@ def _populate_vault(
     written += 1
 
     for rel, content in render_diagnostics_pages(report, graph).items():
+        path = vault / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        written += 1
+
+    for rel, content in all_bases().items():
+        path = vault / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        written += 1
+
+    # Validate bases after write (paths exist under Views/)
+    bases_report = validate_bases_dir(vault / "Views")
+    triaged = triage_findings(
+        graph,
+        report,
+        suppress=getattr(config, "diagnostics_suppress", None) or [],
+        expected_patterns=getattr(config, "diagnostics_expected_patterns", None) or [],
+    )
+    for rel, content in render_workbench_pages(
+        graph, report, triaged=triaged, bases_report=bases_report
+    ).items():
         path = vault / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")

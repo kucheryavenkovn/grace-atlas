@@ -1,21 +1,14 @@
 # FILE: tools/grace_atlas/src/grace_atlas/exporters/markdown.py
-# VERSION: 0.2.0
-# START_MODULE_CONTRACT
-#   PURPOSE: Render Atlas nodes as Obsidian Markdown notes with material wiki-links for Graph View.
-#   SCOPE: entity notes, type indexes, Home (no star-hub), diagnostic indexes
-#   DEPENDS: exporters.notes, source_links, model
-#   LINKS: tools/grace_atlas
-#   ROLE: RUNTIME
-#   MAP_MODE: EXPORTS
-# END_MODULE_CONTRACT
+# VERSION: 0.3.0
+# PURPOSE: Human-oriented Obsidian notes with unified properties + wiki-links for Local Graph.
 
-"""Markdown note rendering for Obsidian Graph View."""
+"""Markdown note rendering for Obsidian workbench."""
 
 from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime, timezone
-from typing import Iterable
+from typing import Any, Iterable
 
 from grace_atlas.config import AtlasConfig
 from grace_atlas.exporters.notes import (
@@ -24,7 +17,6 @@ from grace_atlas.exporters.notes import (
     TYPE_FOLDERS,
     grace_type_slug,
     note_relpath,
-    note_stem,
     note_wikilink_target,
     tags_for,
     wikilink,
@@ -35,6 +27,7 @@ from grace_atlas.source_links import file_open_link
 GENERATED_BANNER = (
     "<!-- GRACE Atlas: GENERATED FILE. Do not edit by hand — manual changes will be lost on rebuild. -->"
 )
+HUMAN_BANNER = "> Этот файл сгенерирован GRACE Atlas. Ручные изменения могут быть потеряны."
 
 
 def _yaml_escape(value: str) -> str:
@@ -46,26 +39,105 @@ def _yaml_escape(value: str) -> str:
     return s
 
 
+def _yaml_value(v: Any, indent: int = 0) -> list[str]:
+    sp = "  " * indent
+    if isinstance(v, bool):
+        return [f"{sp}{'true' if v else 'false'}"]
+    if isinstance(v, (int, float)):
+        return [f"{sp}{v}"]
+    if isinstance(v, list):
+        if not v:
+            return [f"{sp}[]"]
+        lines: list[str] = []
+        for item in v:
+            if isinstance(item, (list, dict)):
+                lines.append(f"{sp}-")
+                lines.extend(_yaml_value(item, indent + 1))
+            else:
+                lines.append(f"{sp}- {_yaml_escape(str(item))}")
+        return lines
+    return [f"{sp}{_yaml_escape(str(v))}"]
+
+
 def render_frontmatter(node: Node) -> str:
+    """Unified workbench property schema."""
+    props = node.properties or {}
+    grace_type = props.get("grace_type") or grace_type_slug(node.type)
+    display = props.get("display_name") or node.name or node.id
     tags = tags_for(node)
-    lines = [
-        "---",
-        f"grace_type: {grace_type_slug(node.type)}",
-        f"grace_id: {_yaml_escape(node.id)}",
-        f"status: {_yaml_escape(node.status or '')}",
-        "generated: true",
-        f"source: {_yaml_escape(node.source or '')}",
-        "tags:",
+    # ensure type tag form grace/type/<x>
+    type_tag = f"grace/type/{grace_type}"
+    if type_tag not in tags:
+        tags.insert(0, type_tag)
+    if props.get("requirement_type"):
+        rt = f"grace/requirement/{props['requirement_type']}"
+        if rt not in tags:
+            tags.append(rt)
+    if props.get("has_traceability_gap"):
+        tags.append("grace/gap")
+
+    lines = ["---"]
+    kv: list[tuple[str, Any]] = [
+        ("grace_id", node.id),
+        ("grace_type", grace_type),
+        ("display_name", display),
+        ("status", node.status or ""),
+        ("source_state", props.get("source_state") or "declared"),
+        ("generated", True),
+        ("source_file", props.get("source_file") or (node.source_ref.path if node.source_ref else "")),
     ]
+    if props.get("source_line") or (node.source_ref and node.source_ref.line_start):
+        kv.append(("source_line", props.get("source_line") or node.source_ref.line_start))
+
+    # typed optional lists / fields
+    for key in (
+        "requirement_type",
+        "priority",
+        "parent",
+        "children",
+        "refines",
+        "refined_by",
+        "belongs_to_use_case",
+        "implemented_by",
+        "implemented_in",
+        "implements",
+        "depends_on",
+        "dependency_of",
+        "verified_by",
+        "verifies",
+        "tested_by",
+        "planned_in",
+        "evidence",
+        "acceptance_criteria",
+        "contracts",
+        "semantic_blocks",
+        "test_files",
+        "commands",
+        "required_markers",
+        "last_known_result",
+        "gap_types",
+        "has_traceability_gap",
+        "edge_count",
+        "path",
+        "module",
+        "bc_parent",
+        "requirement_type_note",
+    ):
+        if key in props and props[key] not in (None, "", [], {}):
+            kv.append((key, props[key]))
+
+    for k, v in kv:
+        if isinstance(v, list):
+            lines.append(f"{k}:")
+            lines.extend(_yaml_value(v, 1))
+        elif isinstance(v, bool):
+            lines.append(f"{k}: {'true' if v else 'false'}")
+        else:
+            lines.append(f"{k}: {_yaml_escape(str(v))}")
+
+    lines.append("tags:")
     for t in tags:
         lines.append(f"  - {t}")
-    if node.source_ref:
-        lines.append(f"artifact: {_yaml_escape(node.source_ref.path)}")
-        if node.source_ref.line_start:
-            lines.append(f"line: {node.source_ref.line_start}")
-    path = node.properties.get("path")
-    if path:
-        lines.append(f"path: {_yaml_escape(str(path))}")
     lines.append("---")
     return "\n".join(lines)
 
@@ -74,31 +146,22 @@ def _group_edges(edges: list[Edge], *, outgoing: bool) -> dict[str, list[Edge]]:
     grouped: dict[str, list[Edge]] = defaultdict(list)
     for e in edges:
         grouped[e.type].append(e)
-    # stable order
     for k in grouped:
         grouped[k] = sorted(grouped[k], key=lambda e: (e.target if outgoing else e.source, e.id))
     return dict(sorted(grouped.items(), key=lambda kv: kv[0]))
 
 
-def _edge_sections(
-    graph: AtlasGraph,
-    node: Node,
-    *,
-    outgoing: bool,
-) -> list[str]:
+def _edge_sections(graph: AtlasGraph, node: Node, *, outgoing: bool) -> list[str]:
     lines: list[str] = []
-    selected: list[Edge] = []
-    for e in graph.edges:
-        if outgoing and e.source == node.id:
-            selected.append(e)
-        elif not outgoing and e.target == node.id:
-            selected.append(e)
+    selected = [
+        e
+        for e in graph.edges
+        if (outgoing and e.source == node.id) or ((not outgoing) and e.target == node.id)
+    ]
     if not selected:
         return lines
-
     titles = OUTGOING_SECTIONS if outgoing else INCOMING_SECTIONS
-    grouped = _group_edges(selected, outgoing=outgoing)
-    for etype, edges in grouped.items():
+    for etype, edges in _group_edges(selected, outgoing=outgoing).items():
         title = titles.get(etype, etype)
         lines.append(f"## {title}")
         lines.append("")
@@ -108,147 +171,174 @@ def _edge_sections(
             if other is None:
                 lines.append(f"- `{etype}` → `[[Other/{other_id}]]` _(unresolved)_")
                 continue
-            label = other.id
-            prov = ""
-            if e.provenance.value != "declared":
-                prov = f" `({e.provenance.value})`"
+            prov = f" `({e.provenance.value})`" if e.provenance.value != "declared" else ""
             desc = f" — {e.description}" if e.description and e.description != e.type else ""
-            lines.append(f"- {wikilink(other, label)}{prov}{desc}")
+            lines.append(f"- {wikilink(other, other.id)}{prov}{desc}")
         lines.append("")
     return lines
 
 
-def _source_section(node: Node, config: AtlasConfig) -> list[str]:
-    from pathlib import Path
-
-    lines: list[str] = ["## Источник", ""]
-    if node.source_ref and node.source_ref.path:
-        art = node.source_ref.path
-        line = node.source_ref.line_start
-        lines.append(f"- GRACE / artifact: `{art}`" + (f" (line {line})" if line else ""))
-        try:
-            p = Path(art)
-            if not p.is_absolute():
-                p = config.repo_root / art
-            if p.exists() and p.is_file():
-                lines.append(
-                    f"- Open artifact: {file_open_link(p, line=line, label=art, vscode_enabled=config.vscode_enabled)}"
-                )
-        except OSError:
-            pass
-    elif node.source:
-        lines.append(f"- Data source role: `{node.source}`")
-    else:
-        lines.append("- _(source not recorded)_")
+def _problems_section(node: Node) -> list[str]:
+    gaps = node.properties.get("gap_types") or []
+    if not gaps and not node.properties.get("has_traceability_gap"):
+        return []
+    lines = ["## Проблемы", ""]
+    if not gaps:
+        lines.append("- Есть флаг `has_traceability_gap`, детали см. Diagnostics.")
+    for g in gaps:
+        lines.append(f"- `{g}`")
+    note = node.properties.get("requirement_type_note")
+    if note:
+        lines.append(f"- {note}")
     lines.append("")
     return lines
 
 
-def _code_open_section(node: Node, config: AtlasConfig) -> list[str]:
-    lines: list[str] = []
-    from pathlib import Path
-
-    if node.type in {NodeType.SOURCE_FILE, NodeType.TEST_FILE}:
-        rel = node.properties.get("path") or node.name
-        abs_p = node.properties.get("absolute_path")
-        lines.append("## Открыть в редакторе")
-        lines.append("")
-        lines.append(f"- Relative path: `{rel}`")
-        if abs_p and node.properties.get("exists"):
-            lines.append(
-                f"- VS Code: {file_open_link(abs_p, label=str(rel), vscode_enabled=config.vscode_enabled)}"
-            )
-        else:
-            lines.append(f"- Missing on disk: `{abs_p or rel}`")
-        lines.append("")
-        return lines
-
-    if node.type in {NodeType.CONTRACT, NodeType.SEMANTIC_BLOCK}:
-        file_rel = node.properties.get("file") or (node.source_ref.path if node.source_ref else "")
-        line = node.source_ref.line_start if node.source_ref else None
-        if file_rel:
-            abs_p = (config.repo_root / file_rel).resolve()
-            lines.append("## Открыть в редакторе")
-            lines.append("")
-            if abs_p.exists():
-                lines.append(
-                    f"- VS Code: {file_open_link(abs_p, line=line, label=f'{file_rel}' + (f':{line}' if line else ''), vscode_enabled=config.vscode_enabled)}"
-                )
-            else:
-                lines.append(f"- File: `{file_rel}` _(missing)_")
-            lines.append("")
-        return lines
-
+def _nav_section(node: Node, config: AtlasConfig) -> list[str]:
+    lines = ["## Навигация", ""]
+    lines.append("- Local Graph: Command palette → **Open local graph** (depth 1–2).")
+    lines.append("- Workbench: [[Dashboards/Workbench]].")
+    lines.append("- Traceability: [[Dashboards/Traceability-Matrix]].")
+    if node.source_ref and node.source_ref.path:
+        lines.append(f"- XML/source artifact: `{node.source_ref.path}`")
+    # code open
     paths = list(node.properties.get("paths") or [])
-    if paths:
-        lines.append("## Исходные файлы (пути)")
-        lines.append("")
-        for p in paths:
+    if node.type in {NodeType.SOURCE_FILE, NodeType.TEST_FILE}:
+        abs_p = node.properties.get("absolute_path")
+        rel = node.properties.get("path")
+        if abs_p and node.properties.get("exists"):
+            lines.append(f"- VS Code: {file_open_link(abs_p, label=str(rel), vscode_enabled=config.vscode_enabled)}")
+    elif paths:
+        for p in paths[:5]:
             abs_p = (config.repo_root / p).resolve()
             if abs_p.exists():
-                lines.append(f"- {file_open_link(abs_p, label=p, vscode_enabled=config.vscode_enabled)}")
-            else:
-                lines.append(f"- `{p}` _(missing)_")
-        lines.append("")
+                lines.append(
+                    f"- VS Code: {file_open_link(abs_p, label=p, vscode_enabled=config.vscode_enabled)}"
+                )
+    lines.append("- Canvas: [[Canvas/Requirement-Traceability.canvas|Traceability canvas]]")
+    lines.append("")
+    return lines
+
+
+def _classification_table(node: Node, graph: AtlasGraph) -> list[str]:
+    props = node.properties
+    rows = [
+        ("Тип", props.get("grace_type") or node.type),
+        ("Статус", node.status or "unknown"),
+        ("Priority", props.get("priority") or "—"),
+        ("requirement_type", props.get("requirement_type") or "—"),
+        ("source_state", props.get("source_state") or "—"),
+        ("Источник", props.get("source_file") or (node.source_ref.path if node.source_ref else "—")),
+    ]
+    if props.get("source_line") or (node.source_ref and node.source_ref.line_start):
+        rows.append(("Строка", str(props.get("source_line") or node.source_ref.line_start)))
+    lines = ["## Классификация", "", "| Поле | Значение |", "|---|---|"]
+    for k, v in rows:
+        lines.append(f"| {k} | {v} |")
+    lines.append("")
+    return lines
+
+
+def _link_list_section(title: str, items: list[str] | None) -> list[str]:
+    if not items:
+        return [f"### {title}", "", "- _отсутствует / не declared_", ""]
+    lines = [f"### {title}", ""]
+    for it in items:
+        # already wiki links in properties
+        if it.startswith("[["):
+            lines.append(f"- {it}")
+        else:
+            lines.append(f"- `{it}`")
+    lines.append("")
     return lines
 
 
 def render_node_note(node: Node, graph: AtlasGraph, config: AtlasConfig) -> str:
+    props = node.properties or {}
+    display = props.get("display_name") or node.name or node.id
     lines: list[str] = [
         GENERATED_BANNER,
         "",
         render_frontmatter(node),
         "",
-        f"# {node.id}",
+        f"# {node.id} — {display}",
+        "",
+        HUMAN_BANNER,
+        "",
+        "## Формулировка",
+        "",
+        node.description or "_(нет описания в GRACE)_",
         "",
     ]
-    if node.name and node.name != node.id:
-        lines.append(f"**{node.name}**")
+    lines.extend(_classification_table(node, graph))
+
+    # Traceability-focused sections for human scan
+    if node.type in {
+        NodeType.USE_CASE,
+        NodeType.REQUIREMENT,
+        NodeType.CONSTRAINT,
+        NodeType.RISK,
+        NodeType.NON_GOAL,
+    }:
+        lines.append("## Трассировка")
         lines.append("")
-    lines.append("## Назначение")
-    lines.append("")
-    lines.append(node.description or "_(нет описания)_")
-    lines.append("")
-    lines.append("## Статус")
-    lines.append("")
-    lines.append(f"- `{node.status or 'unknown'}`")
-    lines.append(f"- type: `{node.type}`")
-    lines.append(f"- note: `{note_wikilink_target(node)}`")
-    lines.append("")
+        lines.extend(_link_list_section("Пользовательские сценарии / related", props.get("belongs_to_use_case")))
+        lines.extend(_link_list_section("Реализующие модули", props.get("implemented_by") or props.get("implements")))
+        lines.extend(_link_list_section("Исходные файлы", props.get("implemented_in")))
+        lines.extend(_link_list_section("Verification", props.get("verified_by")))
+        lines.extend(_link_list_section("Тесты", props.get("tested_by")))
+        lines.extend(_link_list_section("Evidence", props.get("evidence")))
+        lines.extend(_link_list_section("Фазы / plan", props.get("planned_in")))
 
-    lines.extend(_source_section(node, config))
-    lines.extend(_code_open_section(node, config))
+    if node.type == NodeType.MODULE:
+        lines.append("## Трассировка модуля")
+        lines.append("")
+        lines.extend(_link_list_section("Реализует (implements)", props.get("implements")))
+        lines.extend(_link_list_section("Зависит от", props.get("depends_on")))
+        lines.extend(_link_list_section("Зависят от этого", props.get("dependency_of")))
+        lines.extend(_link_list_section("Исходные файлы", props.get("implemented_in")))
+        lines.extend(_link_list_section("Verification", props.get("verified_by")))
+        lines.extend(_link_list_section("Тесты", props.get("tested_by")))
+        lines.extend(_link_list_section("Контракты", props.get("contracts")))
+        lines.extend(_link_list_section("Семантические блоки", props.get("semantic_blocks")))
 
-    # Materialized relationship sections (Graph View edges)
+    if node.type == NodeType.VERIFICATION:
+        lines.append("## Verification")
+        lines.append("")
+        lines.extend(_link_list_section("Проверяет (модули)", props.get("verifies")))
+        tf = props.get("test_files") or []
+        lines.extend(_link_list_section("Test files", [f"`{t}`" for t in tf] if tf else None))
+        lines.extend(_link_list_section("Commands / checks", props.get("commands") or props.get("checks")))
+        lines.extend(_link_list_section("Evidence", props.get("evidence")))
+        lines.append(f"- last_known_result: `{props.get('last_known_result') or node.status}`")
+        lines.append("")
+
+    if node.type in {NodeType.SOURCE_FILE, NodeType.TEST_FILE}:
+        lines.append("## Файл")
+        lines.append("")
+        lines.append(f"- path: `{props.get('path') or node.name}`")
+        lines.append(f"- exists: `{props.get('exists')}`")
+        lines.append("")
+        lines.extend(_link_list_section("Модули (implemented_in reverse)", props.get("implemented_by")))
+        # also show incoming via edge sections below
+
+    lines.extend(_problems_section(node))
+
+    # Full edge materialization for Local Graph
+    lines.append("## Связи (wiki-links для Local Graph)")
+    lines.append("")
     out_sec = _edge_sections(graph, node, outgoing=True)
     in_sec = _edge_sections(graph, node, outgoing=False)
     if out_sec or in_sec:
         lines.extend(out_sec)
         lines.extend(in_sec)
     else:
-        lines.append("## Отношения")
-        lines.append("")
-        lines.append("_Нет рёбер в графе (orphan / isolated)._")
+        lines.append("_Нет рёбер (orphan)._")
         lines.append("")
 
-    # Key properties (non-graph)
-    skip = {"stub", "paths", "test_paths", "absolute_path", "exists", "missing", "is_dir", "file", "links"}
-    props = {k: v for k, v in (node.properties or {}).items() if k not in skip and v not in (None, "", [], {})}
-    if props:
-        lines.append("## Свойства")
-        lines.append("")
-        for k in sorted(props.keys()):
-            v = props[k]
-            if isinstance(v, list):
-                lines.append(f"- **{k}**:")
-                for item in v[:40]:
-                    lines.append(f"  - `{item}`")
-            else:
-                lines.append(f"- **{k}**: `{v}`")
-        lines.append("")
-
+    lines.extend(_nav_section(node, config))
     lines.append("---")
-    lines.append("_Generated by GRACE Atlas (read-only projection). `generated: true`_")
+    lines.append("_GRACE Atlas workbench · read-only · `generated: true`_")
     lines.append("")
     return "\n".join(lines)
 
@@ -267,12 +357,15 @@ def render_index(title: str, nodes: Iterable[Node], *, graph_tag: str = "grace/i
         "",
         f"Count: **{len(nodes_list)}**",
         "",
-        "> Index pages are navigational. Exclude tag `grace/index` from Graph View if they clutter the domain graph.",
+        "> Index pages: exclude tag `grace/index` from Graph View.",
+        "",
+        "Workbench: [[Dashboards/Workbench]] · Base: [[Views/Requirements.base]]",
         "",
     ]
     for n in nodes_list:
         status = f" `{n.status}`" if n.status else ""
-        lines.append(f"- {wikilink(n, n.id)}{status}")
+        gap = " ⚠" if n.properties.get("has_traceability_gap") else ""
+        lines.append(f"- {wikilink(n, n.id)}{status}{gap}")
     lines.append("")
     return "\n".join(lines)
 
@@ -300,39 +393,39 @@ def render_home(
         "",
         f"Generated at: **{generated_at}** (UTC)",
         "",
-        "Read-only projection of GRACE artifacts. GRACE XML and source code remain the source of truth.",
+        "Read-only projection. **Start here for humans:** [[Dashboards/Workbench]].",
         "",
-        "## Canvas",
+        "## Workbench (primary UI)",
         "",
-        "> Open **`.canvas`** files (not plain notes). Links include the `.canvas` extension so Obsidian does not create empty `.md` stubs.",
+        "- [[Dashboards/Workbench|Workbench home]]",
+        "- [[Views/Requirements.base|Requirements registry]]",
+        "- [[Dashboards/Requirement-Tree|Requirement tree]]",
+        "- [[Dashboards/Traceability-Matrix|Traceability matrix]]",
+        "- [[Dashboards/User-Journey-Video2PPTX|User journey]]",
+        "- [[Dashboards/How-to-use|How to use]]",
+        "",
+        "## Canvas (secondary)",
         "",
         "- [[Canvas/Project-Overview.canvas|Project Overview]]",
         "- [[Canvas/Current-Phase.canvas|Current Phase]]",
         "- [[Canvas/User-Journey.canvas|User Journey]]",
         "- [[Canvas/Requirement-Traceability.canvas|Requirement Traceability]]",
         "- [[Canvas/Verification-Gaps.canvas|Verification Gaps]]",
-        "- [[Canvas/_index|Canvas index]]",
         "",
-
         "## Diagnostics",
         "",
         "- [[Diagnostics/Summary]]",
+        "- [[Diagnostics/Gaps-Registry]]",
         "- [[Diagnostics/Broken-References]]",
         "- [[Diagnostics/Orphan-Requirements]]",
         "- [[Diagnostics/Unverified-Modules]]",
-        "- [[Diagnostics/Unmapped-Files]]",
-        "- [[Diagnostics/Ambiguous-Links]]",
         "",
-        "## Indexes (exclude `grace/index` from Graph View)",
+        "## Stats",
         "",
-        "- [[Modules/_index|Modules]]",
-        "- [[Use-Cases/_index|Use cases]]",
-        "- [[Verification/_index|Verification]]",
-        "- [[Phases/_index|Phases]]",
-        "- [[Source-Files/_index|Source files]]",
-        "- [[Tests/_index|Tests]]",
+        f"- Nodes: **{stats['nodes']}** · Edges: **{stats['edges']}**",
+        f"- Gaps: **{gap_summary.get('findings', 0)}** `{gap_summary.get('by_severity', {})}`",
         "",
-        "## Discovered GRACE artifacts",
+        "### Artifacts",
         "",
     ]
     for key in (
@@ -344,49 +437,20 @@ def render_home(
         "technology",
     ):
         lines.append(f"- **{key}**: `{arts.get(key)}`")
-    lines.append("")
-    lines.append("## Entity counts")
-    lines.append("")
-    lines.append(f"- **Nodes**: {stats['nodes']}")
-    lines.append(f"- **Edges**: {stats['edges']}")
-    lines.append("")
-    for t, c in (stats.get("nodes_by_type") or {}).items():
-        lines.append(f"- `{t}`: {c}")
-    lines.append("")
-    lines.append("## Edges by type")
-    lines.append("")
-    for t, c in (stats.get("edges_by_type") or {}).items():
-        lines.append(f"- `{t}`: {c}")
-    lines.append("")
-    lines.append("## Traceability / diagnostics snapshot")
-    lines.append("")
-    lines.append(f"- Findings: **{gap_summary.get('findings', 0)}**")
-    lines.append(f"- By severity: `{gap_summary.get('by_severity', {})}`")
-    lines.append(f"- By code: `{gap_summary.get('by_code', {})}`")
-    lines.append(f"- Missing files: {gap_summary.get('missing_files', 0)}")
-    lines.append(f"- Stub modules: {gap_summary.get('stub_modules', 0)}")
-    lines.append(f"- Unverified modules: {gap_summary.get('unverified_modules', 0)}")
-    lines.append(f"- Broken references: {gap_summary.get('broken_references', 0)}")
-    lines.append("")
-    lines.append("## Rebuild commands")
-    lines.append("")
-    lines.append("```powershell")
-    lines.append("$env:PYTHONPATH = \"tools/grace_atlas/src\"")
-    lines.append("python -m grace_atlas build --project-root .")
-    lines.append("# or:")
-    lines.append("python tools/grace_atlas.py build")
-    lines.append("```")
-    lines.append("")
-    lines.append("## Graph View tips")
-    lines.append("")
-    lines.append("- Open **Graph view** from the left ribbon for the global cloud.")
-    lines.append("- Open a note → command palette → **Open local graph** for neighborhood.")
-    lines.append("- Filter: `tag:#grace/module`, `tag:#grace/file`, `tag:#grace/verification`, `path:Modules`.")
-    lines.append("- Exclude `tag:#grace/index` and `tag:#grace/home` if navigation notes dominate.")
-    lines.append("")
-    lines.append("---")
-    lines.append("_Home intentionally does **not** link every entity (avoids star-graph distortion)._")
-    lines.append("")
+    lines.extend(
+        [
+            "",
+            "## Rebuild",
+            "",
+            "```powershell",
+            "python tools/grace_atlas.py build --project-root .",
+            "```",
+            "",
+            "---",
+            "_Home does **not** link every entity (avoids star-graph)._",
+            "",
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -394,15 +458,13 @@ def utc_now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-# Re-export for exporters
 __all__ = [
     "TYPE_FOLDERS",
     "GENERATED_BANNER",
     "note_relpath",
-    "note_stem",
-    "wikilink",
     "render_node_note",
     "render_index",
     "render_home",
     "utc_now_iso",
+    "render_frontmatter",
 ]

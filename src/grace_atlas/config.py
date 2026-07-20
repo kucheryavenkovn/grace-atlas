@@ -62,6 +62,9 @@ class AtlasConfig:
     vscode_enabled: bool = True
     vscode_workspace_folder: str = ""
     config_path: Path | None = None
+    # diagnostics triage
+    diagnostics_suppress: list[str] = field(default_factory=list)
+    diagnostics_expected_patterns: list[str] = field(default_factory=list)
 
     def resolve_vault(self) -> Path:
         p = self.vault_path
@@ -125,6 +128,7 @@ def load_config(
     source = data.get("source") or {}
     obsidian = data.get("obsidian") or {}
     vscode = data.get("vscode") or {}
+    diagnostics = data.get("diagnostics") or {}
 
     overrides: dict[str, str] = {}
     for key in (
@@ -158,4 +162,6 @@ def load_config(
         vscode_enabled=bool(vscode.get("enabled", True)),
         vscode_workspace_folder=str(vscode.get("workspace_folder") or ""),
         config_path=path,
+        diagnostics_suppress=[str(x) for x in (diagnostics.get("suppress") or [])],
+        diagnostics_expected_patterns=[str(x) for x in (diagnostics.get("expected_patterns") or [])],
     )
