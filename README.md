@@ -2,68 +2,69 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Read-only tool that projects **real GRACE artifacts** and source markup into an **Obsidian Vault**.
+**Язык:** [Русский](README.md) · [English](README.en.md)
 
-GRACE XML and source code remain the source of truth. The vault is a disposable visualization layer.
+Инструмент только для чтения: проецирует **реальные артефакты GRACE** и разметку исходников в **Obsidian Vault** и (с Phase 3) в **Workbench**-снимок для плагинов Obsidian / VS Code.
 
-**Repository:** https://github.com/kucheryavenkovn/grace-atlas  
+XML GRACE и исходный код остаются источником истины. Vault и snapshot — сменяемые слои визуализации.
 
-Used as a **git submodule** in [video2pptx](https://github.com/kucheryavenkovn/video2pptx) under `tools/grace_atlas`, but works with any GRACE-governed project via config + discovery.
+**Репозиторий:** https://github.com/kucheryavenkovn/grace-atlas  
 
-## What is GRACE?
+Используется как **git submodule** в [video2pptx](https://github.com/kucheryavenkovn/video2pptx) (`tools/grace_atlas`), но работает с любым GRACE-проектом через config + discovery.
 
-**GRACE** = **G**raph-**R**AG **A**nchored **C**ode **E**ngineering — a contract-first methodology for AI-assisted engineering: semantic markup, shared XML artifacts (`requirements`, `development-plan`, `knowledge-graph`, `verification-plan`, …), verification planning, and knowledge-graph navigation.
+## Что такое GRACE?
 
-Skills, marketplace packaging, and the optional `grace` CLI live here:
+**GRACE** = **G**raph-**R**AG **A**nchored **C**ode **E**ngineering — contract-first методология AI-assisted разработки: семантическая разметка, общие XML-артефакты (`requirements`, `development-plan`, `knowledge-graph`, `verification-plan`, …), план верификации, навигация по knowledge graph.
+
+Skills, marketplace и опциональный CLI `grace`:
 
 → **[osovv/grace-marketplace](https://github.com/osovv/grace-marketplace)**
 
-This repository (**grace-atlas**) is a separate, read-only **visualization** layer: it does not replace GRACE skills/CLI; it turns existing GRACE project artifacts into an Obsidian vault (Graph View, Local Graph, Canvas, diagnostics).
+Этот репозиторий (**grace-atlas**) — отдельный слой **визуализации** (read-only): не заменяет skills/CLI GRACE; превращает артефакты проекта в vault (Graph View, Local Graph, Canvas, diagnostics) и workbench snapshot.
 
 ## GRACE graphs (Graphviz + Mermaid)
 
-Standalone generator (stdlib + optional Graphviz `dot`) — **no Obsidian required**:
+Автономный генератор (stdlib + опционально Graphviz `dot`) — **Obsidian не нужен**:
 
 ```powershell
-# against any project with docs/*.xml (or XML in project root)
+# любой проект с docs/*.xml (или XML в корне)
 python tools/grace_graphs/generate_grace_graphs.py --project-root /path/to/grace-project
 
-# Video2PPTX (when this repo is a submodule)
+# Video2PPTX (когда репозиторий — submodule)
 python tools/grace_atlas/tools/grace_graphs/generate_grace_graphs.py --project-root .
 ```
 
-Writes under `<project>/docs/grace-graphs/` (or `--out`):
+Пишет в `<project>/docs/grace-graphs/` (или `--out`):
 
-| Format | Path |
+| Формат | Путь |
 |--------|------|
 | Graphviz DOT | `dot/*.dot` |
 | SVG | `svg/*.svg` |
 | PNG | `png/*.png` |
 | Mermaid | `mermaid/*.mmd`, `mermaid/*.md` |
 
-Example output from the minimal fixture: [`examples/grace-graphs/`](examples/grace-graphs/).
+Пример с минимальной фикстуры: [`examples/grace-graphs/`](examples/grace-graphs/).
 
-Details: [`tools/grace_graphs/README.md`](tools/grace_graphs/README.md).
+Подробности: [`tools/grace_graphs/README.md`](tools/grace_graphs/README.md).
 
-
-## Phase 3 — Workbench snapshot + plugins
+## Phase 3 — Workbench snapshot + плагины
 
 ```powershell
-# 1) Build vault + workbench snapshot
-$env:PYTHONPATH = "src"   # or: pip install -e .
+# 1) Vault + workbench snapshot
+$env:PYTHONPATH = "src"   # или: pip install -e .
 python -m grace_atlas build --project-root /path/to/project
-# snapshot only:
+# только snapshot:
 python -m grace_atlas snapshot build --project-root /path/to/project
 
-# 2a) Obsidian: open .grace-atlas/vault, install plugin from release zip
-#     Command: GRACE: Open Workbench
+# 2a) Obsidian: открыть .grace-atlas/vault, поставить плагин из release zip
+#     Команда: GRACE: Open Workbench
 
-# 2b) VS Code: open project root, install .vsix from release
-#     Command: GRACE: Open Workbench
+# 2b) VS Code: открыть корень проекта, поставить .vsix из release
+#     Команда: GRACE: Open Workbench
 ```
 
-Sources: [`obsidian-plugin/`](obsidian-plugin/), [`vscode-extension/`](vscode-extension/).  
-See [Demo](#demo) GIFs and [v0.4.0 release](https://github.com/kucheryavenkovn/grace-atlas/releases/tag/v0.4.0).
+Исходники: [`obsidian-plugin/`](obsidian-plugin/), [`vscode-extension/`](vscode-extension/).  
+Демо-GIF — [ниже](#демо); сборки — [релиз v0.4.0](https://github.com/kucheryavenkovn/grace-atlas/releases/tag/v0.4.0).
 
 ## Phase 2 — Human workbench (Markdown / Bases)
 
@@ -81,257 +82,254 @@ python -m grace_atlas show UC-001 --project-root .
 python -m grace_atlas open --project-root . --entity UC-001
 ```
 
-## Demo
+## Демо
 
 ### Phase 3 — Workbench (Obsidian + VS Code)
 
-Read-only Rose-like shell over the **normalized snapshot** (`.grace-atlas/model`), not raw GRACE XML.
+Read-only оболочка в духе Rose поверх **нормализованного snapshot** (`.grace-atlas/model`), без разбора «сырого» GRACE XML в UI.
 
-**Part 1** — Obsidian plugin **GRACE Workbench** (Model Browser · Diagram · Inspector · Diagnostics):
+**Часть 1** — плагин Obsidian **GRACE Workbench** (Model Browser · Diagram · Inspector · Diagnostics):
 
-![GRACE Workbench in Obsidian](docs/assets/demo-workbench-obsidian.gif)
+![GRACE Workbench в Obsidian](docs/assets/demo-workbench-obsidian.gif)
 
-**Part 2** — VS Code / Cursor extension (tree + 4-pane workbench, open source at line):
+**Часть 2** — расширение VS Code / Cursor (дерево + workbench на 4 панели, открытие исходника на строке):
 
-![GRACE Workbench in VS Code](docs/assets/demo-workbench-vscode.gif)
+![GRACE Workbench в VS Code](docs/assets/demo-workbench-vscode.gif)
 
-Built plugins: [Release v0.4.0](https://github.com/kucheryavenkovn/grace-atlas/releases/tag/v0.4.0)  
+Собранные плагины: [релиз v0.4.0](https://github.com/kucheryavenkovn/grace-atlas/releases/tag/v0.4.0)  
 (`grace-workbench-obsidian-0.4.0.zip`, `grace-workbench-0.4.0.vsix`).
 
 ### Phase 1–2 — Vault / Graph View (legacy)
 
-**Part 1** — артефакты GRACE (заметки vault, сгенерированные Atlas):
+**Часть 1** — артефакты GRACE (заметки vault, сгенерированные Atlas):
 
-![Артефакты GRACE — part 1](docs/assets/demo.gif)
+![Артефакты GRACE — часть 1](docs/assets/demo.gif)
 
-**Part 2** — глобальный граф Obsidian (Graph View, с 00:57):
+**Часть 2** — глобальный граф Obsidian (Graph View, с 00:57):
 
-![Глобальный граф Obsidian — part 2](docs/assets/demo-2.gif)
+![Глобальный граф Obsidian — часть 2](docs/assets/demo-2.gif)
 
 <details>
-<summary>Higher-quality MP4 (optional)</summary>
+<summary>MP4 более высокого качества (опционально)</summary>
 
-[demo-preview.mp4](docs/assets/demo-preview.mp4) — compressed H.264 preview of an earlier full session.
+[demo-preview.mp4](docs/assets/demo-preview.mp4) — сжатый H.264 preview более ранней сессии.
 
 </details>
 
+## 1. Назначение
 
-## 1. Purpose
+Дать человеку визуальный интерфейс к GRACE:
 
-Give humans a visual interface to GRACE:
+| Представление | Что это |
+|---------------|---------|
+| **Graph View** | «Облако» заметок, связанных `[[wiki-links]]` |
+| **Local Graph** | Окрестность открытой заметки |
+| **Canvas** | Курируемые доски архитектуры / процессов (JSON Canvas) |
+| **VS Code links** | Переход из заметки в исходник на строку |
+| **Diagnostics** | Отчёты о разрывах трассируемости |
+| **Workbench** | Rose-like UI (Obsidian / VS Code) поверх snapshot |
 
-| View | What it is |
-|------|------------|
-| **Graph View** | Automatic “cloud” of all notes linked by `[[wiki-links]]` |
-| **Local Graph** | Neighborhood of the note you have open |
-| **Canvas** | Curated architecture / process boards (JSON Canvas) |
-| **VS Code links** | Jump from a note to source at a line |
-| **Diagnostics** | Traceability gap reports |
+## 2. Ограничения read-only (v1 / workbench 3A)
 
-## 2. Read-only limitations (v1)
+- **Не** изменяет GRACE XML и исходники приложения (без GracePatch + подтверждения)  
+- **Не** обновляет статусы GRACE и не подтверждает inferred-связи автоматически  
+- **Не** требует embeddings, LLM, Neo4j или сети  
+- **Не** добавляет runtime-зависимость Video2PPTX → Atlas  
+- Inferred-рёбра помечены `inferred` и **не** auto-confirmed  
+- Правки Canvas в Obsidian **не** пишутся обратно в GRACE  
 
-- Does **not** modify GRACE XML or application source  
-- Does **not** update GRACE statuses or invent confirmed links  
-- Does **not** require Obsidian plugins, embeddings, LLM, Neo4j, or network  
-- Does **not** add a runtime dependency from Video2PPTX to Atlas  
-- Inferred edges are labeled `inferred` and are **not** auto-confirmed  
-- Canvas edits in Obsidian do **not** write back to GRACE  
+## 3. Установка
 
-## 3. Install
-
-Python **3.10+**, **stdlib only** (no third-party runtime deps).
+Python **3.10+**, runtime-зависимости — **только stdlib**.
 
 ### Standalone
 
 ```powershell
 git clone https://github.com/kucheryavenkovn/grace-atlas.git
 cd grace-atlas
-pip install -e ".[dev]"   # optional
+pip install -e ".[dev]"   # опционально
 python -m grace_atlas --help
 
-# without install
+# без установки
 $env:PYTHONPATH = "src"   # Linux/macOS: export PYTHONPATH=src
 python -m grace_atlas --help
 ```
 
-### As a git submodule (Video2PPTX and similar)
+### Как git submodule
 
 ```powershell
 git submodule add https://github.com/kucheryavenkovn/grace-atlas.git tools/grace_atlas
 git submodule update --init --recursive
 
-# clone host with submodule
+# клон хоста вместе с submodule
 git clone --recurse-submodules https://github.com/OWNER/HOST.git
 ```
 
-Host projects usually keep `grace-atlas.toml` at the project root and a thin wrapper script.
+В корне хоста обычно лежат `grace-atlas.toml` и тонкий wrapper-скрипт.
 
-## 4. Run
+## 4. Запуск
 
 ```powershell
-# any GRACE project
+# любой GRACE-проект
 python -m grace_atlas build --project-root /path/to/project
 
 # Video2PPTX (submodule + wrapper)
 python tools/grace_atlas.py build --project-root .
 
-# Options
+# Опции
 python -m grace_atlas build --project-root . --clean --output .grace-atlas/vault
 python -m grace_atlas build --project-root . --open
 python -m grace_atlas build --project-root . --strict
 python -m grace_atlas status --project-root .
 python -m grace_atlas trace M-APP-AUTO --project-root .
 python -m grace_atlas open --project-root .
+python -m grace_atlas snapshot build --project-root .
+python -m grace_atlas impact UC-001 --project-root .
+python -m grace_atlas drift --project-root .
 ```
 
-Default vault: `.grace-atlas/vault/` (override in `grace-atlas.toml` or `--output`).
+Vault по умолчанию: `.grace-atlas/vault/` (override в `grace-atlas.toml` или `--output`).  
+Snapshot: `.grace-atlas/model/`.
 
-## 5. Open the vault
+## 5. Открыть vault
 
-1. Run `build`  
-2. Obsidian → **Open folder as vault** → select `.grace-atlas/vault`  
-3. Open `Home.md`  
+1. Выполните `build`  
+2. Obsidian → **Open folder as vault** → `.grace-atlas/vault`  
+3. Откройте `Home.md`  
 
-If `open` / `obsidian://` fails, the CLI prints the absolute vault path — use that folder manually.
+Если `open` / `obsidian://` не сработал, CLI печатает абсолютный путь vault — откройте папку вручную.
 
-## 6. Global Graph View
+## 6. Глобальный Graph View
 
-1. Open the vault  
-2. Click **Graph view** in the left ribbon (or command palette: “Graph view”)  
-3. You should see a linked cloud of modules, use cases, files, verification, phases  
+1. Откройте vault  
+2. **Graph view** в ленте слева (или command palette)  
+3. Должно появиться связанное облако modules / use cases / files / verification / phases  
 
-**Important:** relations are real `[[wiki-links]]` inside note bodies (not only frontmatter).  
-`Home.md` intentionally does **not** link every entity (avoids a star graph).
+**Важно:** связи — реальные `[[wiki-links]]` в теле заметок (не только frontmatter).  
+`Home.md` **намеренно** не ссылается на каждую сущность (иначе «звезда»).
 
-### Filters and groups (manual in Obsidian)
+### Фильтры и группы (вручную в Obsidian)
 
 - Filter: `tag:#grace/module`  
 - Filter: `tag:#grace/file`  
 - Filter: `tag:#grace/verification`  
 - Filter: `tag:#grace/phase`  
 - Filter: `path:Modules`  
-- Exclude navigation clutter: `-tag:#grace/index` and optionally `-tag:#grace/home`  
-- Color groups in Graph settings by tag (`grace/module`, `grace/file`, …)  
+- Убрать навигационный шум: `-tag:#grace/index`, опционально `-tag:#grace/home`  
+- Цвета групп в Graph settings по tag (`grace/module`, `grace/file`, …)  
 
-Atlas does **not** overwrite your personal `.obsidian/graph.json` after the first create.
+Atlas **не** перезаписывает ваш `.obsidian/graph.json` после первого создания.
 
 ## 7. Local Graph
 
-1. Open any note (e.g. `Modules/M-APP-AUTO`)  
+1. Откройте заметку (например `Modules/M-APP-AUTO`)  
 2. Command palette → **Open local graph**  
-3. Increase **depth** in the Local Graph controls to see neighbors of neighbors  
-4. Enable **arrows** in Graph settings if you want directed edges  
+3. Увеличьте **depth**  
+4. При желании включите **arrows** в настройках Graph  
 
 ## 8. Canvas
 
-Under `Canvas/`:
+В `Canvas/`:
 
-| File | Content |
-|------|---------|
-| `Project-Overview.canvas` | Core modules + deps sample + UC/V hubs |
-| `Current-Phase.canvas` | Phase with `in_progress` (or diagnostic if unknown) |
-| `User-Journey.canvas` | Install→…→state journey mapped to real UC/modules or **gap** |
-| `Requirement-Traceability.canvas` | Columns UC / Module / File / V / Test / Evidence |
-| `Verification-Gaps.canvas` | Gap clusters from diagnostics |
+| Файл | Содержание |
+|------|------------|
+| `Project-Overview.canvas` | Ядро модулей + deps + UC/V |
+| `Current-Phase.canvas` | Фаза `in_progress` (или diagnostic) |
+| `User-Journey.canvas` | Journey → реальные UC/modules или **gap** |
+| `Requirement-Traceability.canvas` | Колонки UC / Module / File / V / Test / Evidence |
+| `Verification-Gaps.canvas` | Кластеры gaps из diagnostics |
 
-Cards reference Markdown notes (file nodes). Edge labels show relation types. Layout is deterministic.
+Карточки ссылаются на Markdown. Подписи рёбер — типы отношений. Layout детерминированный.
 
-**Important:** always open / link with the **`.canvas`** extension:
+**Важно:** всегда ссылайтесь с расширением **`.canvas`**:
 
 ```markdown
 [[Canvas/Project-Overview.canvas|Project Overview]]
 ```
 
-A bare `[[Canvas/Project-Overview]]` makes Obsidian create an **empty** `Project-Overview.md`, which looks like a broken canvas. Rebuild removes those stubs.
+Голый `[[Canvas/Project-Overview]]` создаёт пустой `.md`. Rebuild убирает такие stubs.
 
-Editing a Canvas does **not** change GRACE XML.
+Правка Canvas **не** меняет GRACE XML.
 
-## 9. Jump to code (VS Code)
+## 9. Переход в код (VS Code)
 
-Notes include links like:
+В заметках есть ссылки вида:
 
 ```text
 vscode://file/C:/path/to/file.py:42:1
 ```
 
-- Windows paths, spaces, and non-ASCII are URI-encoded  
-- Line/column omitted when unknown (no fake `:1`)  
-- Configure `vscode.enabled` in `grace-atlas.toml`  
+- Windows-пути, пробелы и non-ASCII кодируются  
+- Строка/колонка опускаются, если неизвестны  
+- Настройка: `vscode.enabled` в `grace-atlas.toml`  
 
-## 10. Output structure
+Workbench-плагин VS Code открывает файлы из snapshot (`GRACE: Open Current Entity Source`).
+
+## 10. Структура выхода
 
 ```text
-.grace-atlas/vault/
-├── .grace-atlas-generated      # safety marker
-├── Home.md
-├── Modules/  Use-Cases/  Verification/  Phases/  Steps/
-├── Source-Files/  Tests/  Contracts/  Semantic-Blocks/
-├── Technology/  Operational-Packets/  ...
-├── Diagnostics/
-│   ├── Summary.md
-│   ├── Broken-References.md
-│   ├── Orphan-Requirements.md
-│   ├── Unverified-Modules.md
-│   ├── Unmapped-Files.md
-│   └── Ambiguous-Links.md
-├── Canvas/
-│   ├── Project-Overview.canvas
-│   ├── Current-Phase.canvas
-│   ├── User-Journey.canvas
-│   ├── Requirement-Traceability.canvas
-│   └── Verification-Gaps.canvas
-└── _atlas/graph.json
+.grace-atlas/
+├── vault/                      # Obsidian vault
+│   ├── .grace-atlas-generated
+│   ├── Home.md
+│   ├── Modules/  Use-Cases/  …
+│   ├── Diagnostics/
+│   ├── Canvas/
+│   └── _atlas/graph.json
+└── model/                      # Workbench snapshot (Phase 3)
+    ├── manifest.json
+    ├── model.json
+    ├── diagnostics.json
+    ├── indexes.json
+    └── …
 ```
 
-Each entity note has:
-
-- YAML frontmatter (`generated: true`, tags, grace_id, …)  
-- Generated-file banner comment  
-- Description, status, source artifact  
-- Relationship sections with `[[TypeFolder/id]]` wiki-links (bidirectional at note level)  
-- VS Code open links when paths exist  
+У заметки сущности: YAML frontmatter, баннер generated, описание, секции связей с `[[…]]`, VS Code-ссылки при наличии путей.
 
 ## 11. Diagnostics
 
 Provenance:
 
-- **declared** — taken from GRACE XML / markup  
-- **inferred** — heuristic (e.g. module→test via verification); not confirmed  
-- **unresolved** — stub or missing target  
+- **declared** — из GRACE XML / markup  
+- **inferred** — эвристика; не подтверждено  
+- **unresolved** — stub или отсутствующая цель  
 
-Reports live under `Diagnostics/`. CLI: `status`, `gaps`.
+Отчёты: `Diagnostics/`. CLI: `status`, `gaps`.
 
-## 12. Safety
+## 12. Безопасность
 
-- Only writes under the configured vault path  
-- Clean/replace requires marker `.grace-atlas-generated` (or empty dir / legacy marker)  
-- Refuses project root, home, filesystem root  
-- Writes to a temp directory then replaces the vault  
+- Пишет только в настроенный vault / `.grace-atlas/model` / user-данные  
+- Clean vault требует маркер `.grace-atlas-generated` (или пустой каталог)  
+- Отказ от записи в корень проекта, home, корень ФС  
+- Атомарная замена через temp  
 
-## 13. Tests
+GracePatch (Phase 3C): plan → validate → `--confirm` → audit; без commit в git.
+
+## 13. Тесты
 
 ```powershell
-$env:PYTHONPATH = "tools/grace_atlas/src"
-python -m pytest tools/grace_atlas/tests -q
+$env:PYTHONPATH = "src"   # из корня grace-atlas
+python -m pytest tests -q
 ```
 
-Includes fixture XML under `tests/fixtures/minimal/` and a smoke path against the real Video2PPTX docs.
+Фикстуры: `tests/fixtures/minimal/`; smoke — на реальных docs Video2PPTX.
 
-## 14. Known limitations
+## 14. Известные ограничения
 
-- Product “requirements” are mostly **UseCases** (`UC-*`); no separate `FR-*` scheme in this repo  
-- Operational packets XML is template-centric  
-- CrossLink relations are free text → `cross_link` or mapped type  
-- Large vaults: Semantic Blocks / Contracts increase node count  
-- Graph layout in Obsidian is force-directed (not controlled by Atlas)  
+- «Требования» в продукте в основном **UseCases** (`UC-*`); отдельной схемы `FR-*` может не быть  
+- Operational packets часто template-centric  
+- CrossLink — свободный текст → `cross_link` или mapped type  
+- Большие vault: Semantic Blocks / Contracts увеличивают число узлов  
+- Layout Graph View в Obsidian — force-directed (не управляется Atlas)  
+- GUI workbench требует ручной acceptance (Obsidian / VS Code)  
 
-## 15. Future ideas
+## 15. Идеи на будущее
 
-- Optional write-back of human-approved links  
-- Interactive filter presets shipped as optional Obsidian snippets  
+- Write-back только подтверждённых человеком связей  
+- Пресеты фильтров Graph как optional snippets  
 - Incremental rebuild  
-- Mermaid export  
+- Полный GUI DnD / multi-tab polish  
 
-## License
+## Лицензия
 
-Same as the host repository.
+MIT (см. [LICENSE](LICENSE)). В submodule — та же политика, что у host-репозитория, если host переопределяет условия.

@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "grace-atlas"
 version = "0.4.0"
-description = "GRACE Atlas — Vault projector + workbench snapshot + Rose-like Obsidian plugin (read-only core; controlled patches optional)."
+description = "GRACE Atlas — проектор GRACE → Obsidian Vault + workbench snapshot + плагины Obsidian/VS Code (read-only ядро; опциональные GracePatch)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

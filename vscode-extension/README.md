@@ -1,24 +1,25 @@
-# GRACE Workbench for VS Code
+# GRACE Workbench для VS Code
 
-Rose-like read-only CASE shell for [GRACE Atlas](../).  
-Same contract as the Obsidian plugin: **reads only** `.grace-atlas/model` snapshot (never parses GRACE XML).
+**Язык:** [Русский](README.md) · [English](README.en.md)
 
-## Prerequisites
+Read-only CASE-оболочка в духе Rose для [GRACE Atlas](../).  
+Тот же контракт, что у плагина Obsidian: читает **только** snapshot `.grace-atlas/model` (GRACE XML не разбирает).
 
-1. Build the workbench snapshot from the project root:
+## Предварительные условия
+
+1. Соберите workbench snapshot из корня проекта:
 
 ```powershell
-cd D:\git\video2pptx
-$env:PYTHONPATH = "tools/grace_atlas/src"
+$env:PYTHONPATH = "src"   # из корня grace-atlas, либо tools/grace_atlas/src из host
 python -m grace_atlas snapshot build --project-root .
 ```
 
-2. Open the **project root** (not the vault) as a VS Code workspace folder.
+2. Откройте в VS Code **корень проекта** (не vault).
 
 ## Собрать и установить (рекомендуется: .vsix)
 
 ```powershell
-cd D:\git\video2pptx\tools\grace_atlas\vscode-extension
+cd vscode-extension
 npm install
 npm run package
 # → grace-workbench-0.4.0.vsix
@@ -27,57 +28,52 @@ npm run package
 В VS Code / Cursor:
 
 1. `Ctrl+Shift+P` → **Extensions: Install from VSIX…**
-2. Выберите файл  
-   `D:\git\video2pptx\tools\grace_atlas\vscode-extension\grace-workbench-0.4.0.vsix`
-3. Перезагрузите окно, если попросит
-4. Откройте workspace **корня проекта** (`D:\git\video2pptx`)
+2. Выберите `grace-workbench-0.4.0.vsix`
+3. Reload при необходимости
+4. Откройте workspace **корня проекта**
 5. Command Palette → **GRACE: Open Workbench**
 
-Или из терминала:
+Или:
 
 ```powershell
-code --install-extension D:\git\video2pptx\tools\grace_atlas\vscode-extension\grace-workbench-0.4.0.vsix
-# Cursor:
-# cursor --install-extension ...\grace-workbench-0.4.0.vsix
+code --install-extension path\to\grace-workbench-0.4.0.vsix
 ```
 
-### Только build (без .vsix) + dev
+Готовые сборки: https://github.com/kucheryavenkovn/grace-atlas/releases/tag/v0.4.0
+
+### Только dev (без .vsix)
 
 ```powershell
 npm run build
 # F5 из папки vscode-extension → Extension Development Host
-# или Extensions: Install from Location… → папка vscode-extension (нужен dist/)
 ```
 
-## UI
+## Интерфейс
 
-| Surface | Role |
-|---------|------|
-| Activity bar **GRACE** | Model Browser tree |
-| **GRACE: Open Workbench** | 4-pane webview: Browser · Diagram (Cytoscape+ELK) · Inspector · Problems/Trace/History |
-| Status bar | Node count / model status |
+| Поверхность | Роль |
+|-------------|------|
+| Activity bar **GRACE** | дерево Model Browser |
+| **GRACE: Open Workbench** | webview на 4 панели: Browser · Diagram · Inspector · Problems/Trace/History |
+| Status bar | число nodes / статус модели |
 
-Selection is synchronized across tree, diagram, inspector, and diagnostics.  
-**Open Source** opens the file from snapshot `links.sourceUri` / `source.file` at the recorded line.
+## Настройки
 
-## Settings
+| Setting | По умолчанию | Смысл |
+|---------|--------------|--------|
+| `graceWorkbench.modelPath` | `.grace-atlas/model` | каталог snapshot относительно workspace |
+| `graceWorkbench.autoLoad` | `true` | загружать snapshot при активации |
 
-| Setting | Default | Meaning |
-|---------|---------|---------|
-| `graceWorkbench.modelPath` | `.grace-atlas/model` | Snapshot directory relative to workspace |
-| `graceWorkbench.autoLoad` | `true` | Load snapshot on activate |
-
-## Architecture (same as Obsidian)
+## Архитектура
 
 ```
-Python GRACE Core → Workbench Snapshot → VS Code extension (this)
-                                      → Obsidian plugin
+Python GRACE Core → Workbench Snapshot → расширение VS Code (это)
+                                      → плагин Obsidian
                                       → CLI
 ```
 
-No Neo4j, no network, no mandatory LLM. Inferred links are never written.
+Без Neo4j, без сети, без обязательного LLM. Inferred-связи UI не записывает.
 
-## Tests
+## Тесты
 
 ```powershell
 npm test

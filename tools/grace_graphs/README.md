@@ -1,86 +1,88 @@
 # GRACE graphs (Graphviz + Mermaid)
 
-Standalone scripts (Python stdlib only) that read GRACE XML from `docs/` (or project root) and write diagrams.
+**Язык:** [Русский](README.md) · [English](README.en.md)
 
-Lives in **grace-atlas** so any GRACE project can use it:
+Автономные скрипты (только Python stdlib): читают GRACE XML из `docs/` (или корня проекта) и пишут диаграммы.
+
+Живут в **grace-atlas**, чтобы любой GRACE-проект мог их использовать:
 
 ```text
 tools/grace_graphs/generate_grace_graphs.py
-examples/grace-graphs/          # fixture sample (DOT/PNG/SVG/Mermaid)
+examples/grace-graphs/          # пример с фикстуры (DOT/PNG/SVG/Mermaid)
 ```
 
-**Does not** modify GRACE XML.  
-Optional: Graphviz `dot` for PNG/SVG.
+**Не** изменяют GRACE XML.  
+Опционально: Graphviz `dot` для PNG/SVG.
 
-GRACE methodology: [osovv/grace-marketplace](https://github.com/osovv/grace-marketplace).
+Методология GRACE: [osovv/grace-marketplace](https://github.com/osovv/grace-marketplace).
 
-## Source artifacts
+## Исходные артефакты
 
-| File | Used for |
+| Файл | Для чего |
 |------|----------|
 | `docs/knowledge-graph.xml` | modules, depends, CrossLink |
 | `docs/development-plan.xml` | modules, DF-*, Phase-*, step-* |
 | `docs/requirements.xml` | UC-* + RelatedFlows |
 | `docs/verification-plan.xml` | V-M-*, VF-* |
 
-## Run
+## Запуск
 
 ```powershell
-# from repo root — writes DOT + Mermaid + PNG + SVG (if Graphviz installed)
+# из корня репозитория — DOT + Mermaid + PNG + SVG (если установлен Graphviz)
 python tools/grace_graphs/generate_grace_graphs.py --project-root .
 
-# subset
+# подмножество
 python tools/grace_graphs/generate_grace_graphs.py --project-root . --only overview,modules-deps-core,phases-steps
 
-# DOT + Mermaid only (skip PNG/SVG)
+# только DOT + Mermaid (без PNG/SVG)
 python tools/grace_graphs/generate_grace_graphs.py --project-root . --skip-render
 
-# only one raster format
+# один растровый формат
 python tools/grace_graphs/generate_grace_graphs.py --project-root . --formats svg
 python tools/grace_graphs/generate_grace_graphs.py --project-root . --formats png
 
-# list graphs
+# список графов
 python tools/grace_graphs/generate_grace_graphs.py --list
 ```
 
-Requires **Graphviz** (`dot`) for PNG/SVG:
+Для PNG/SVG нужен **Graphviz** (`dot`):
 
 ```powershell
 winget install Graphviz.Graphviz
-# or portable under tools/grace_graphs/.graphviz/ (gitignored)
+# или portable в tools/grace_graphs/.graphviz/ (в gitignore)
 ```
 
-Default output: `docs/grace-graphs/`
+Выход по умолчанию: `docs/grace-graphs/`
 
 ```text
 docs/grace-graphs/
-  README.md                 # index + PNG previews + Mermaid
-  dot/                      # Graphviz source
-  svg/                      # vector renders
-  png/                      # raster renders
-  mermaid/                  # .mmd + .md
+  README.md
+  dot/
+  svg/
+  png/
+  mermaid/
 ```
 
-## Graphs
+## Графы
 
-| Name | Content |
-|------|---------|
-| `overview` | Counts + hub edges |
-| `modules-deps` | All `M-*` depends_on |
-| `modules-deps-core` | Subset of connected modules (≤40) |
+| Имя | Содержание |
+|-----|------------|
+| `overview` | Счётчики + hub-рёбра |
+| `modules-deps` | Все `M-*` depends_on |
+| `modules-deps-core` | Связное подмножество (≤40) |
 | `modules-verification` | Module ↔ V-M-* |
 | `use-cases-flows` | UC / DF / VF |
 | `phases-steps` | Phase → step → verification |
-| `cross-links` | CrossLink sample from knowledge-graph |
+| `cross-links` | CrossLink из knowledge-graph |
 
-## Render Graphviz (optional)
+## Render Graphviz (опционально)
 
-Install [Graphviz](https://graphviz.org/) so `dot` is on `PATH`:
+Установите [Graphviz](https://graphviz.org/), чтобы `dot` был в `PATH`:
 
 ```powershell
 New-Item -ItemType Directory -Force -Path docs/grace-graphs/svg | Out-Null
 dot -Tsvg docs/grace-graphs/dot/modules-deps-core.dot -o docs/grace-graphs/svg/modules-deps-core.svg
-dot -Tpng docs/grace-graphs/dot/phases-steps.dot -o docs/grace-graphs/svg/phases-steps.png
+dot -Tpng docs/grace-graphs/dot/phases-steps.dot -o docs/grace-graphs/png/phases-steps.png
 ```
 
-Mermaid files open in GitHub, Obsidian (Mermaid), or [mermaid.live](https://mermaid.live).
+Файлы Mermaid открываются на GitHub, в Obsidian (Mermaid) или на [mermaid.live](https://mermaid.live).
