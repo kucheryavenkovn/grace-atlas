@@ -11,6 +11,14 @@ build/
 .venv/
 venv/
 
+# JS / extension build artifacts
+node_modules/
+**/node_modules/
+*.vsix
+obsidian-plugin/main.js
+obsidian-plugin/*.js.map
+vscode-extension/dist/
+
 # Generated vaults
 .grace-atlas/vault/
 **/.grace-atlas/vault/

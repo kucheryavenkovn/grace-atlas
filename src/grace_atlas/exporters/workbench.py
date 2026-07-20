@@ -44,6 +44,8 @@ def render_workbench_pages(
     pages["Dashboards/Gap-Triage.md"] = _gap_triage(graph, triaged)
     pages["Dashboards/Manual-Acceptance-Checklist.md"] = _manual_checklist()
     pages["Dashboards/How-to-use.md"] = _howto()
+    pages["Dashboards/Round-Trip-Status.md"] = _roundtrip_stub()
+    pages["Dashboards/Phase-3A-Manual-Acceptance.md"] = _phase3a_checklist()
     pages["Diagnostics/Gaps-Registry.md"] = _gaps_registry(graph, report, triaged)
     if bases_report is not None:
         pages["Dashboards/Bases-Validation.md"] = render_validation_markdown(bases_report)
@@ -567,8 +569,60 @@ def _howto() -> str:
             "3. CLI: `python -m grace_atlas show UC-001 --project-root .`",
             "4. Gaps: `python -m grace_atlas gaps --actionable --project-root .`",
             "5. Checklist: [[Dashboards/Manual-Acceptance-Checklist]].",
+            "6. Phase 3 Workbench plugin: command **GRACE: Open Workbench**.",
+            "7. Snapshot: `python -m grace_atlas snapshot build --project-root .`",
+            "8. Round-trip: [[Dashboards/Round-Trip-Status]].",
             "",
             "Declared vs inferred: inferred marked in body; gaps never auto-fixed.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _roundtrip_stub() -> str:
+    lines = _header("Round-Trip Status")
+    lines.extend(
+        [
+            "Контроль соответствия GRACE model ↔ source markup ↔ files ↔ tests ↔ evidence.",
+            "",
+            "**Важно:** inferred-предложения **никогда** не становятся declared без GracePatch + подтверждения.",
+            "",
+            "## CLI",
+            "",
+            "```bash",
+            "python -m grace_atlas scan --project-root .",
+            "python -m grace_atlas drift --project-root . --json",
+            "python -m grace_atlas impact M-APP-AUTO --project-root .",
+            "python -m grace_atlas snapshot build --project-root .",
+            "```",
+            "",
+            "Полный live-отчёт (после scan):",
+            "",
+            "```bash",
+            "python -c \"from pathlib import Path; from grace_atlas.config import load_config; "
+            "from grace_atlas.roundtrip.dashboard import write_roundtrip_dashboard; "
+            "print(write_roundtrip_dashboard(load_config(repo_root=Path('.'))))\"",
+            "```",
+            "",
+            "См. также plugin Round-trip panels (Phase 3D) и `.grace-atlas/user/fingerprints.json`.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _phase3a_checklist() -> str:
+    lines = _header("Phase 3A Manual Acceptance")
+    lines.extend(
+        [
+            "См. исходный checklist в `tools/grace_atlas/docs/Phase-3A-Manual-Acceptance.md`.",
+            "",
+            "- [ ] Open Workbench",
+            "- [ ] UC-001 select + diagram + inspector",
+            "- [ ] M-APP-AUTO neighborhood",
+            "- [ ] Back/Forward",
+            "- [ ] No GRACE XML mutation",
             "",
         ]
     )

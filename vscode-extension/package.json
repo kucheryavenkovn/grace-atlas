@@ -1,0 +1,154 @@
+{
+  "name": "grace-workbench",
+  "displayName": "GRACE Workbench",
+  "description": "Rose-like GRACE CASE workbench for VS Code. Reads normalized .grace-atlas/model snapshot (no GRACE XML parsing).",
+  "version": "0.4.0",
+  "publisher": "grace-atlas",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kucheryavenkovn/grace-atlas"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "grace",
+    "traceability",
+    "architecture",
+    "workbench"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "graceWorkbench.open",
+        "title": "GRACE: Open Workbench",
+        "icon": "$(layers)"
+      },
+      {
+        "command": "graceWorkbench.reload",
+        "title": "GRACE: Reload Model",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "graceWorkbench.focusEntity",
+        "title": "GRACE: Focus Entity",
+        "icon": "$(search)"
+      },
+      {
+        "command": "graceWorkbench.openSource",
+        "title": "GRACE: Open Current Entity Source"
+      },
+      {
+        "command": "graceWorkbench.showTraceability",
+        "title": "GRACE: Show Traceability"
+      },
+      {
+        "command": "graceWorkbench.showImpact",
+        "title": "GRACE: Show Impact"
+      },
+      {
+        "command": "graceWorkbench.navigateBack",
+        "title": "GRACE: Navigate Back"
+      },
+      {
+        "command": "graceWorkbench.navigateForward",
+        "title": "GRACE: Navigate Forward"
+      },
+      {
+        "command": "graceWorkbench.refreshTree",
+        "title": "GRACE: Refresh Model Browser",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "grace-workbench",
+          "title": "GRACE",
+          "icon": "media/grace.svg"
+        }
+      ]
+    },
+    "views": {
+      "grace-workbench": [
+        {
+          "id": "graceWorkbench.browser",
+          "name": "Model Browser"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "graceWorkbench.open",
+          "when": "view == graceWorkbench.browser",
+          "group": "navigation@1"
+        },
+        {
+          "command": "graceWorkbench.reload",
+          "when": "view == graceWorkbench.browser",
+          "group": "navigation@2"
+        },
+        {
+          "command": "graceWorkbench.focusEntity",
+          "when": "view == graceWorkbench.browser",
+          "group": "navigation@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "graceWorkbench.openSource",
+          "when": "view == graceWorkbench.browser && viewItem == graceEntity",
+          "group": "inline@1"
+        },
+        {
+          "command": "graceWorkbench.open",
+          "when": "view == graceWorkbench.browser && viewItem == graceEntity",
+          "group": "navigation@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "GRACE Workbench",
+      "properties": {
+        "graceWorkbench.modelPath": {
+          "type": "string",
+          "default": ".grace-atlas/model",
+          "description": "Path to workbench snapshot directory relative to workspace folder."
+        },
+        "graceWorkbench.autoLoad": {
+          "type": "boolean",
+          "default": true,
+          "description": "Load snapshot when extension activates."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.config.mjs production",
+    "watch": "node esbuild.config.mjs",
+    "typecheck": "tsc -noEmit -skipLibCheck",
+    "test": "node --import tsx --test src/tests/*.test.ts",
+    "package": "npm run build && npx @vscode/vsce package --no-dependencies --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "cytoscape": "^3.30.0",
+    "elkjs": "^0.9.3"
+  }
+}

@@ -1,9 +1,9 @@
 # FILE: tools/grace_atlas/src/grace_atlas/cli.py
-# VERSION: 0.2.0
+# VERSION: 0.4.0
 # START_MODULE_CONTRACT
-#   PURPOSE: CLI for GRACE Atlas — build, status, trace, open (+ legacy aliases).
+#   PURPOSE: CLI for GRACE Atlas — build, status, trace, open, snapshot, patch, drift, scan.
 #   SCOPE: argparse entry points; no video2pptx dependency
-#   DEPENDS: config, graph, diagnostics, exporters, trace, source_links
+#   DEPENDS: config, graph, diagnostics, exporters, trace, source_links, snapshots, patches, roundtrip
 #   LINKS: tools/grace_atlas
 #   ROLE: ENTRY_POINT
 #   MAP_MODE: EXPORTS
@@ -139,6 +139,77 @@ def _build_parser() -> argparse.ArgumentParser:
     gen.add_argument("--strict", action="store_true")
     gen.add_argument("--json", action="store_true")
     gen.add_argument("--verbose", action="store_true")
+
+    # Phase 3A — snapshot
+    snap = sub.add_parser("snapshot", help="Workbench snapshot build/validate/inspect")
+    snap_sub = snap.add_subparsers(dest="snapshot_command", required=True)
+    sb = snap_sub.add_parser("build", help="Build workbench snapshot under .grace-atlas/model")
+    _add_project_root(sb)
+    sb.add_argument("--no-source", action="store_true")
+    sb.add_argument("--json", action="store_true")
+    sb.add_argument("--verbose", action="store_true")
+    sv = snap_sub.add_parser("validate", help="Validate existing snapshot")
+    _add_project_root(sv)
+    sv.add_argument("--json", action="store_true")
+    sv.add_argument("--verbose", action="store_true")
+    si = snap_sub.add_parser("inspect", help="Inspect entity from snapshot")
+    _add_project_root(si)
+    si.add_argument("entity_id", help="Entity id, e.g. UC-001")
+    si.add_argument("--json", action="store_true")
+    si.add_argument("--verbose", action="store_true")
+
+    # Phase 3C — patches (fixture-safe CLI)
+    patch = sub.add_parser("patch", help="GracePatch plan/validate/apply (controlled XML edits)")
+    patch_sub = patch.add_subparsers(dest="patch_command", required=True)
+    pp = patch_sub.add_parser("plan", help="Plan patch from JSON file (no write)")
+    _add_project_root(pp)
+    pp.add_argument("patch_file", type=Path, help="Path to GracePatch JSON")
+    pp.add_argument("--json", action="store_true")
+    pp.add_argument("--verbose", action="store_true")
+    pv = patch_sub.add_parser("validate", help="Validate patch against temp copy")
+    _add_project_root(pv)
+    pv.add_argument("patch_file", type=Path)
+    pv.add_argument("--json", action="store_true")
+    pv.add_argument("--verbose", action="store_true")
+    pa = patch_sub.add_parser("apply", help="Apply validated patch (requires --confirm)")
+    _add_project_root(pa)
+    pa.add_argument("patch_file", type=Path)
+    pa.add_argument("--confirm", action="store_true", help="Required to write XML")
+    pa.add_argument("--allow-new-errors", action="store_true")
+    pa.add_argument("--json", action="store_true")
+    pa.add_argument("--verbose", action="store_true")
+    pr = patch_sub.add_parser("reverse", help="Build reverse patch for applied patch id")
+    _add_project_root(pr)
+    pr.add_argument("patch_id", help="Patch id from audit log")
+    pr.add_argument("--json", action="store_true")
+    pr.add_argument("--verbose", action="store_true")
+
+    # Phase 3D — round-trip
+    scan = sub.add_parser("scan", help="Scan source fingerprints (full or changed-only)")
+    _add_project_root(scan)
+    scan.add_argument("--changed-only", action="store_true")
+    scan.add_argument("--json", action="store_true")
+    scan.add_argument("--verbose", action="store_true")
+
+    drift = sub.add_parser("drift", help="Report model/code drift")
+    _add_project_root(drift)
+    drift.add_argument("--json", action="store_true")
+    drift.add_argument("--verbose", action="store_true")
+
+    impact = sub.add_parser("impact", help="Impact analysis for entity id(s)")
+    _add_project_root(impact)
+    impact.add_argument("entity_ids", nargs="+", help="Root entity ids")
+    impact.add_argument("--direction", choices=["incoming", "outgoing", "both"], default="both")
+    impact.add_argument("--depth", type=int, default=3)
+    impact.add_argument("--json", action="store_true")
+    impact.add_argument("--verbose", action="store_true")
+    impact.add_argument("--no-source", action="store_true")
+
+    watch = sub.add_parser("watch", help="Poll for source changes (hash-based; no required network)")
+    _add_project_root(watch)
+    watch.add_argument("--interval", type=float, default=2.0, help="Poll seconds")
+    watch.add_argument("--once", action="store_true", help="Single scan then exit")
+    watch.add_argument("--verbose", action="store_true")
 
     return p
 
@@ -332,12 +403,27 @@ def main(argv: list[str] | None = None) -> int:
         config = _load(args)
         graph, arts = build_graph(config, include_source=include_source)
         report = build_gap_report(graph)
+        from grace_atlas.enrichment import enrich_graph
+
+        enrich_graph(graph, report)
         clean = not getattr(args, "no_clean", False)
         try:
             result = export_vault(graph, config, clean=clean, report=report)
         except VaultSafetyError as exc:
             print(f"ERROR: {exc}", file=sys.stderr)
             return 2
+
+        # Workbench snapshot (Phase 3A) — always refresh with build
+        from grace_atlas.snapshots import build_and_write_snapshot
+
+        snap_result = build_and_write_snapshot(graph, report, config)
+        result["snapshot"] = {
+            "model_dir": snap_result["model_dir"],
+            "modelHash": snap_result["modelHash"],
+            "nodeCount": snap_result["nodeCount"],
+            "edgeCount": snap_result["edgeCount"],
+            "diagnosticCount": snap_result["diagnosticCount"],
+        }
 
         if getattr(args, "json", False):
             print(json.dumps(result, indent=2, ensure_ascii=False))
@@ -350,6 +436,12 @@ def main(argv: list[str] | None = None) -> int:
             miss = result.get("missing_canvas_refs") or []
             if miss:
                 print(f"Canvas missing note refs: {len(miss)} (sample: {miss[:3]})")
+            print(
+                f"Snapshot: {snap_result['model_dir']}  "
+                f"hash={snap_result['modelHash']}  "
+                f"nodes={snap_result['nodeCount']} edges={snap_result['edgeCount']} "
+                f"diagnostics={snap_result['diagnosticCount']}"
+            )
             print("Open vault in Obsidian (Open folder as vault). Use: python -m grace_atlas open")
 
         if getattr(args, "open", False):
@@ -363,8 +455,201 @@ def main(argv: list[str] | None = None) -> int:
                 return 1
         return 0
 
+    if args.command == "snapshot":
+        return _cmd_snapshot(args)
+    if args.command == "patch":
+        return _cmd_patch(args)
+    if args.command == "scan":
+        return _cmd_scan(args)
+    if args.command == "drift":
+        return _cmd_drift(args)
+    if args.command == "impact":
+        return _cmd_impact(args)
+    if args.command == "watch":
+        return _cmd_watch(args)
+
     parser.error(f"Unknown command {args.command}")
     return 2
+
+
+def _cmd_snapshot(args: argparse.Namespace) -> int:
+    from grace_atlas.enrichment import enrich_graph
+    from grace_atlas.snapshots import (
+        build_and_write_snapshot,
+        inspect_entity,
+        model_dir_for,
+        validate_snapshot_dir,
+    )
+    from grace_atlas.snapshots.validator import SnapshotValidationError
+
+    config = _load(args)
+    cmd = args.snapshot_command
+    include_source = not getattr(args, "no_source", False)
+
+    if cmd == "build":
+        graph, _ = build_graph(config, include_source=include_source)
+        report = build_gap_report(graph)
+        enrich_graph(graph, report)
+        result = build_and_write_snapshot(graph, report, config)
+        if getattr(args, "json", False):
+            print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+        else:
+            print(f"Snapshot: {result['model_dir']}")
+            print(f"Hash: {result['modelHash']}")
+            print(
+                f"Nodes: {result['nodeCount']}  Edges: {result['edgeCount']}  "
+                f"Diagnostics: {result['diagnosticCount']}"
+            )
+        return 0
+
+    model_dir = model_dir_for(config)
+    if cmd == "validate":
+        try:
+            result = validate_snapshot_dir(model_dir)
+        except SnapshotValidationError as exc:
+            print(f"INVALID: {exc}", file=sys.stderr)
+            return 1
+        if getattr(args, "json", False):
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+        else:
+            print(f"OK  schema={result['schemaVersion']} hash={result['modelHash']}")
+            print(
+                f"nodes={result['nodeCount']} edges={result['edgeCount']} "
+                f"diagnostics={result['diagnosticCount']}"
+            )
+        return 0
+
+    if cmd == "inspect":
+        try:
+            data = inspect_entity(model_dir, args.entity_id)
+        except SnapshotValidationError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
+        except KeyError:
+            print(f"Entity not found in snapshot: {args.entity_id}", file=sys.stderr)
+            return 1
+        if getattr(args, "json", False):
+            print(json.dumps(data, indent=2, ensure_ascii=False))
+        else:
+            n = data["node"]
+            print(f"{n['id']}  [{n['type']}]  {n['displayName']}")
+            print(f"status={n.get('status') or '-'}  findings={len(data['findings'])}")
+            print(f"outgoing={len(data['outgoing'])}  incoming={len(data['incoming'])}")
+            for e in data["outgoing"][:15]:
+                print(f"  → {e['relation']} {e['target']}  ({e['sourceState']})")
+            for e in data["incoming"][:15]:
+                print(f"  ← {e['relation']} {e['source']}  ({e['sourceState']})")
+            for f in data["findings"][:10]:
+                print(f"  [{f['severity']}] {f['code']}: {f['message'][:100]}")
+        return 0
+    return 2
+
+
+def _cmd_patch(args: argparse.Namespace) -> int:
+    from grace_atlas.patches.pipeline import (
+        apply_patch_file,
+        plan_patch_file,
+        reverse_patch,
+        validate_patch_file,
+    )
+
+    config = _load(args)
+    cmd = args.patch_command
+    if cmd == "plan":
+        result = plan_patch_file(config, Path(args.patch_file))
+        print(json.dumps(result, indent=2, ensure_ascii=False, default=str) if getattr(args, "json", False) else result.get("summary_text") or json.dumps(result, indent=2, ensure_ascii=False, default=str))
+        return 0 if result.get("ok") else 1
+    if cmd == "validate":
+        result = validate_patch_file(config, Path(args.patch_file))
+        print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+        return 0 if result.get("ok") else 1
+    if cmd == "apply":
+        if not getattr(args, "confirm", False):
+            print("Refusing to apply without --confirm", file=sys.stderr)
+            return 2
+        result = apply_patch_file(
+            config,
+            Path(args.patch_file),
+            allow_new_errors=bool(getattr(args, "allow_new_errors", False)),
+        )
+        print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+        return 0 if result.get("ok") else 1
+    if cmd == "reverse":
+        result = reverse_patch(config, args.patch_id)
+        print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+        return 0 if result.get("ok") else 1
+    return 2
+
+
+def _cmd_scan(args: argparse.Namespace) -> int:
+    from grace_atlas.roundtrip.scanner import scan_project
+
+    config = _load(args)
+    result = scan_project(config, changed_only=bool(getattr(args, "changed_only", False)))
+    if getattr(args, "json", False):
+        print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+    else:
+        print(f"Scanned files: {result.get('scanned')}  changed: {result.get('changed')}  skipped: {result.get('skipped')}")
+        print(f"Fingerprint store: {result.get('store_path')}")
+    return 0
+
+
+def _cmd_drift(args: argparse.Namespace) -> int:
+    from grace_atlas.roundtrip.drift import compute_drift
+
+    config = _load(args)
+    result = compute_drift(config)
+    if getattr(args, "json", False):
+        print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+    else:
+        print(f"Drift items: {len(result.get('items') or [])}")
+        for item in (result.get("items") or [])[:40]:
+            print(f"  [{item.get('category')}] {item.get('confidence', 1.0):.2f} {item.get('summary')}")
+        if len(result.get("items") or []) > 40:
+            print(f"  ... and {len(result['items']) - 40} more")
+    return 0
+
+
+def _cmd_impact(args: argparse.Namespace) -> int:
+    from grace_atlas.enrichment import enrich_graph
+    from grace_atlas.roundtrip.impact import impact_query
+
+    config = _load(args)
+    include_source = not getattr(args, "no_source", False)
+    graph, _ = build_graph(config, include_source=include_source)
+    report = build_gap_report(graph)
+    enrich_graph(graph, report)
+    result = impact_query(
+        graph,
+        roots=list(args.entity_ids),
+        direction=getattr(args, "direction", "both") or "both",
+        max_depth=int(getattr(args, "depth", 3) or 3),
+    )
+    if getattr(args, "json", False):
+        print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+    else:
+        print(f"Roots: {', '.join(result['roots'])}")
+        print(f"Direct: {len(result['directlyAffected'])}  Transitive: {len(result['transitivelyAffected'])}")
+        for exp in (result.get("explanations") or [])[:20]:
+            print(f"  {exp}")
+    return 0
+
+
+def _cmd_watch(args: argparse.Namespace) -> int:
+    import time
+
+    from grace_atlas.roundtrip.scanner import scan_project
+
+    config = _load(args)
+    interval = float(getattr(args, "interval", 2.0) or 2.0)
+    once = bool(getattr(args, "once", False))
+    while True:
+        result = scan_project(config, changed_only=True)
+        changed = result.get("changed") or 0
+        print(f"[watch] scanned={result.get('scanned')} changed={changed}")
+        if once:
+            return 0
+        time.sleep(max(0.5, interval))
 
 
 if __name__ == "__main__":
