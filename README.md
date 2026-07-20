@@ -46,7 +46,26 @@ Example output from the minimal fixture: [`examples/grace-graphs/`](examples/gra
 Details: [`tools/grace_graphs/README.md`](tools/grace_graphs/README.md).
 
 
-## Phase 2 — Human workbench
+## Phase 3 — Workbench snapshot + plugins
+
+```powershell
+# 1) Build vault + workbench snapshot
+$env:PYTHONPATH = "src"   # or: pip install -e .
+python -m grace_atlas build --project-root /path/to/project
+# snapshot only:
+python -m grace_atlas snapshot build --project-root /path/to/project
+
+# 2a) Obsidian: open .grace-atlas/vault, install plugin from release zip
+#     Command: GRACE: Open Workbench
+
+# 2b) VS Code: open project root, install .vsix from release
+#     Command: GRACE: Open Workbench
+```
+
+Sources: [`obsidian-plugin/`](obsidian-plugin/), [`vscode-extension/`](vscode-extension/).  
+See [Demo](#demo) GIFs and [v0.4.0 release](https://github.com/kucheryavenkovn/grace-atlas/releases/tag/v0.4.0).
+
+## Phase 2 — Human workbench (Markdown / Bases)
 
 После `build` откройте vault в Obsidian и начните с:
 
@@ -64,6 +83,23 @@ python -m grace_atlas open --project-root . --entity UC-001
 
 ## Demo
 
+### Phase 3 — Workbench (Obsidian + VS Code)
+
+Read-only Rose-like shell over the **normalized snapshot** (`.grace-atlas/model`), not raw GRACE XML.
+
+**Part 1** — Obsidian plugin **GRACE Workbench** (Model Browser · Diagram · Inspector · Diagnostics):
+
+![GRACE Workbench in Obsidian](docs/assets/demo-workbench-obsidian.gif)
+
+**Part 2** — VS Code / Cursor extension (tree + 4-pane workbench, open source at line):
+
+![GRACE Workbench in VS Code](docs/assets/demo-workbench-vscode.gif)
+
+Built plugins: [Release v0.4.0](https://github.com/kucheryavenkovn/grace-atlas/releases/tag/v0.4.0)  
+(`grace-workbench-obsidian-0.4.0.zip`, `grace-workbench-0.4.0.vsix`).
+
+### Phase 1–2 — Vault / Graph View (legacy)
+
 **Part 1** — артефакты GRACE (заметки vault, сгенерированные Atlas):
 
 ![Артефакты GRACE — part 1](docs/assets/demo.gif)
@@ -75,7 +111,7 @@ python -m grace_atlas open --project-root . --entity UC-001
 <details>
 <summary>Higher-quality MP4 (optional)</summary>
 
-[demo-preview.mp4](docs/assets/demo-preview.mp4) — compressed H.264 preview of the full session.
+[demo-preview.mp4](docs/assets/demo-preview.mp4) — compressed H.264 preview of an earlier full session.
 
 </details>
 

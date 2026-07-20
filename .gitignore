@@ -33,3 +33,8 @@ vscode-extension/dist/
 docs/assets/demo-source.*
 *.mp4
 !docs/assets/demo-preview.mp4
+# temporary screen captures at repo root (convert to docs/assets/*.gif)
+/demo_obsidian.mp4
+/demo_vscode.mp4
+/demo_*.mp4
+/release-assets/
