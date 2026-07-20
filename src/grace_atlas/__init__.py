@@ -15,5 +15,5 @@
 
 """GRACE Atlas — read-only GRACE → Obsidian Vault projector."""
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 

@@ -1,6 +1,6 @@
 {
   "name": "grace-workbench",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "GRACE Workbench — Rose-like read-only CASE shell for GRACE Atlas snapshots",
   "main": "main.js",
   "scripts": {
@@ -9,7 +9,12 @@
     "test": "node --import tsx --test src/tests/*.test.ts",
     "typecheck": "tsc -noEmit -skipLibCheck"
   },
-  "keywords": ["obsidian", "grace", "workbench", "traceability"],
+  "keywords": [
+    "obsidian",
+    "grace",
+    "workbench",
+    "traceability"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.11.0",
