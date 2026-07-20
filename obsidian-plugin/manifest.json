@@ -1,7 +1,7 @@
 {
   "id": "grace-workbench",
   "name": "GRACE Workbench",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "minAppVersion": "1.5.0",
   "description": "CASE Workbench для GRACE: браузер модели, диаграмма, инспектор, диагностика. Читает только snapshot .grace-atlas/model.",
   "author": "GRACE Atlas",

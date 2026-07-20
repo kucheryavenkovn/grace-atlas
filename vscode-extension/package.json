@@ -2,7 +2,7 @@
   "name": "grace-workbench",
   "displayName": "GRACE Workbench",
   "description": "CASE Workbench для GRACE в VS Code. Читает нормализованный snapshot .grace-atlas/model (без разбора GRACE XML).",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "publisher": "grace-atlas",
   "repository": {
     "type": "git",
