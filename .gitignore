@@ -19,9 +19,11 @@ obsidian-plugin/main.js
 obsidian-plugin/*.js.map
 vscode-extension/dist/
 
-# Generated vaults
+# Generated vaults and local authoring workspace
 .grace-atlas/vault/
 **/.grace-atlas/vault/
+.grace-atlas/authoring/
+**/.grace-atlas/authoring/
 
 # IDE
 .idea/

@@ -1,0 +1,5 @@
+# Pre-existing failures on Linux in grace-atlas main as of 2026-07-27.
+# Differential gate permits these exact node IDs and rejects every new failure.
+tests/test_parsers_and_export.py::test_build_graph_from_real_artifacts
+tests/test_parsers_and_export.py::test_export_real_repo_smoke
+tests/test_unit_core.py::test_vscode_uri_encoding

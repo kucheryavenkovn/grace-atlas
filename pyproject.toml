@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "grace-atlas"
-version = "0.4.1"
-description = "GRACE Atlas — проектор GRACE → Obsidian Vault + workbench snapshot + плагины Obsidian/VS Code (read-only ядро; опциональные GracePatch)."
+version = "0.5.0"
+description = "GRACE Atlas — projector, traceability workbench and optional controlled authoring/translation tools."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -38,6 +38,7 @@ dev = [
 
 [project.scripts]
 grace-atlas = "grace_atlas.cli:main"
+grace-atlas-author = "grace_atlas.authoring.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/grace_atlas"]

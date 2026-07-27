@@ -1,0 +1,48 @@
+name: Authoring workbench
+
+on:
+  pull_request:
+  push:
+    branches:
+      - feature/authoring-workbench-core
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Compile
+        run: python -m compileall src/grace_atlas/authoring
+      - name: Authoring tests
+        run: pytest tests/test_authoring*.py -q
+      - name: Collect full regression evidence
+        shell: bash
+        run: |
+          set +e
+          pytest -q --junitxml=full-regression.xml 2>&1 | tee full-regression.txt
+          status=${PIPESTATUS[0]}
+          echo "$status" > full-regression.exit
+          exit 0
+      - name: Differential regression gate
+        run: |
+          python tools/check_pytest_baseline.py \
+            --junit full-regression.xml \
+            --baseline .ci/pytest-baseline.txt
+      - name: CLI smoke
+        run: |
+          grace-atlas --version
+          grace-atlas-author --help
+      - name: Upload regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authoring-regression-evidence
+          path: |
+            full-regression.txt
+            full-regression.exit
+            full-regression.xml
