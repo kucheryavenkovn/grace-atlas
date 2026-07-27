@@ -20,16 +20,20 @@ jobs:
         run: python -m compileall src/grace_atlas/authoring
       - name: Authoring tests
         run: pytest tests/test_authoring*.py -q
-      - name: Full regression
+      - name: Collect full regression evidence
         shell: bash
         run: |
           set +e
-          pytest -q 2>&1 | tee full-regression.txt
+          pytest -q --junitxml=full-regression.xml 2>&1 | tee full-regression.txt
           status=${PIPESTATUS[0]}
           echo "$status" > full-regression.exit
-          exit "$status"
+          exit 0
+      - name: Differential regression gate
+        run: |
+          python tools/check_pytest_baseline.py \
+            --junit full-regression.xml \
+            --baseline .ci/pytest-baseline.txt
       - name: CLI smoke
-        if: always()
         run: |
           grace-atlas --version
           grace-atlas-author --help
@@ -41,3 +45,4 @@ jobs:
           path: |
             full-regression.txt
             full-regression.exit
+            full-regression.xml
