@@ -11,7 +11,7 @@ from grace_atlas.parsers._xmlutil import (
 
 
 def test_sanitize_known_legacy_defects() -> None:
-    source = """<Root>
+    source = r"""<Root>
   <Rule>command &lt;out&gt</Rule>
   <step-1 module=\"M-CORE\">Run</step-1>
   <scenario-1 kind="success">Done</scenario-2>
