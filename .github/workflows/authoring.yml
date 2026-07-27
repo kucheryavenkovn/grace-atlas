@@ -19,10 +19,25 @@ jobs:
       - name: Compile
         run: python -m compileall src/grace_atlas/authoring
       - name: Authoring tests
-        run: pytest tests/test_authoring.py -q
+        run: pytest tests/test_authoring*.py -q
       - name: Full regression
-        run: pytest -q
+        shell: bash
+        run: |
+          set +e
+          pytest -q 2>&1 | tee full-regression.txt
+          status=${PIPESTATUS[0]}
+          echo "$status" > full-regression.exit
+          exit "$status"
       - name: CLI smoke
+        if: always()
         run: |
           grace-atlas --version
           grace-atlas-author --help
+      - name: Upload regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authoring-regression-evidence
+          path: |
+            full-regression.txt
+            full-regression.exit
