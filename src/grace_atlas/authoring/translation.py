@@ -1,5 +1,5 @@
 # FILE: src/grace_atlas/authoring/translation.py
-# VERSION: 0.1.0
+# VERSION: 0.1.1
 # START_MODULE_CONTRACT
 #   PURPOSE: Produce traceable translation drafts and optional source-replacement GracePatch proposals.
 #   SCOPE: LLM-assisted translation of selected entity fields; default output is sidecar, not source mutation.
@@ -84,7 +84,7 @@ def build_translation_draft(
     if not isinstance(translations, dict):
         raise ValueError("LLM response.translations must be an object")
     clean: dict[str, str] = {}
-    for field, original in fields.items():
+    for field in fields:
         value = str(translations.get(field) or "").strip()
         if not value:
             raise ValueError(f"missing translated field: {field}")
@@ -113,19 +113,26 @@ def build_translation_draft(
     if request.replace_source:
         if not settings.allow_source_replace:
             raise PermissionError("authoring.allow_source_replace=false")
-        operations = [
-            {
-                "operation": "update_property",
-                "entityId": request.entity_id,
-                "property": field,
-                "value": translated,
-                "expectedOldValue": fields[field],
-                "reason": f"translation {request.source_language}->{request.target_language}; draft={draft.draft_id}",
-            }
-            for field, translated in clean.items()
-        ]
+        if len(clean) != 1:
+            raise ValueError(
+                "source replacement is intentionally limited to one field per patch in v0.5; "
+                "use --fields name or --fields description. Multi-field translations remain available as sidecars."
+            )
+        field, translated = next(iter(clean.items()))
         patch = new_patch(
-            operations,
+            [
+                {
+                    "operation": "update_property",
+                    "entityId": request.entity_id,
+                    "property": field,
+                    "value": translated,
+                    "expectedOldValue": fields[field],
+                    "reason": (
+                        f"translation {request.source_language}->{request.target_language}; "
+                        f"draft={draft.draft_id}"
+                    ),
+                }
+            ],
             project_hash=project_hash,
             author={"type": "llm-assisted", "name": getattr(llm, "model", "")},
         ).as_dict()
