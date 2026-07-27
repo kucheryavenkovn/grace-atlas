@@ -1,5 +1,5 @@
 # FILE: tools/grace_atlas/src/grace_atlas/parsers/_xmlutil.py
-# VERSION: 0.2.0
+# VERSION: 0.2.1
 # START_MODULE_CONTRACT
 #   PURPOSE: Shared XML helpers and bounded compatibility parsing for legacy GRACE artifacts.
 #   SCOPE: tag names, text, line maps, id splitting; read-only repair of known syntax defects.
@@ -50,9 +50,9 @@ def text_of(elem: ET.Element | None, default: str = "") -> str:
     if elem.text and elem.text.strip():
         parts.append(elem.text.strip())
     for child in elem:
-        t = text_of(child)
-        if t:
-            parts.append(t)
+        text = text_of(child)
+        if text:
+            parts.append(text)
         if child.tail and child.tail.strip():
             parts.append(child.tail.strip())
     return " ".join(parts).strip() or default
@@ -61,9 +61,9 @@ def text_of(elem: ET.Element | None, default: str = "") -> str:
 def child_text(elem: ET.Element, names: tuple[str, ...], default: str = "") -> str:
     for child in elem:
         if local(child.tag) in names:
-            t = (child.text or "").strip()
-            if t:
-                return t
+            text = (child.text or "").strip()
+            if text:
+                return text
             nested = text_of(child)
             if nested:
                 return nested
@@ -82,9 +82,9 @@ def attr(elem: ET.Element, *names: str, default: str = "") -> str:
 
 
 def iter_children(elem: ET.Element, *names: str) -> Iterator[ET.Element]:
-    want = set(names)
+    wanted = set(names)
     for child in elem:
-        if local(child.tag) in want:
+        if local(child.tag) in wanted:
             yield child
 
 
@@ -138,7 +138,7 @@ def sanitize_legacy_xml(text: str) -> tuple[str, tuple[XmlCompatibilityFix, ...]
     The source file is never changed. The compatibility layer currently handles:
     - missing semicolons on the five predefined XML entities;
     - JSON-style escaped quotes accidentally copied into XML attributes;
-    - a one-line element closed with a different sibling tag name.
+    - a leaf element written on one line but closed with a sibling tag name.
     """
     result = text
     fixes: list[XmlCompatibilityFix] = []
@@ -162,7 +162,11 @@ def sanitize_legacy_xml(text: str) -> tuple[str, tuple[XmlCompatibilityFix, ...]
         newline = "\n" if line.endswith("\n") else ""
         bare = line[:-1] if newline else line
         match = line_pattern.match(bare)
-        if match and match.group("open") != match.group("close"):
+        if (
+            match
+            and match.group("open") != match.group("close")
+            and "<" not in match.group("body")
+        ):
             bare = (
                 f"{match.group('prefix')}<{match.group('open')}{match.group('attrs') or ''}>"
                 f"{match.group('body')}</{match.group('open')}>{match.group('suffix')}"
